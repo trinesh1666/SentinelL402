@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+sqlalchemy
+psycopg2-binary
+joblib
+pandas
+scikit-learn
+nostrwalletconnect
+nostrkey
+httpx
+requests
+email-validator
+pytest

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentinelL402 Security Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div>
+            <h1>🛡️ SentinelL402</h1>
+            <p>Metered AI Security Gateway</p>
+        </div>
+
+        <div class="status">
+            <span id="apiStatusDot"></span>
+            <span id="apiStatus">Checking API...</span>
+        </div>
+    </header>
+
+
+    <main class="container">
+
+        <!-- USER / CREDIT INFORMATION -->
+
+        <section class="card">
+
+            <h2>Account</h2>
+
+            <div class="account-grid">
+
+                <div>
+                    <span class="label">User ID</span>
+                    <strong id="userId">Loading...</strong>
+                </div>
+
+                <div>
+                    <span class="label">Credits Remaining</span>
+                    <strong id="credits">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Total Requests</span>
+                    <strong id="requests">-</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- SECURITY ANALYSIS -->
+
+        <section class="card">
+
+            <h2>🔍 Network Security Analysis</h2>
+
+            <p class="description">
+                Submit network-flow information to the SentinelL402
+                AI security pipeline.
+            </p>
+
+            <label for="eventType">Event Type</label>
+
+            <input
+                id="eventType"
+                type="text"
+                value="network_flow"
+            >
+
+
+            <label for="severity">Severity</label>
+
+            <select id="severity">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high" selected>High</option>
+                <option value="critical">Critical</option>
+            </select>
+
+
+            <label for="description">Description</label>
+
+            <textarea id="description">Testing SentinelL402 agent with ML security analysis</textarea>
+
+
+            <button id="analyzeButton" onclick="analyzeSecurity()">
+                🔎 Analyze Network Traffic
+            </button>
+
+        </section>
+
+
+        <!-- PAYMENT -->
+
+        <section
+            id="paymentCard"
+            class="card payment-card hidden"
+        >
+
+            <h2>⚡ Payment Required</h2>
+
+            <p>
+                Your AI credits are exhausted.
+                Pay the Lightning invoice to continue.
+            </p>
+
+            <div class="payment-info">
+
+                <div>
+                    <span class="label">Payment ID</span>
+                    <strong id="paymentId">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Amount</span>
+                    <strong id="paymentAmount">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Credits Added</span>
+                    <strong>5</strong>
+                </div>
+
+            </div>
+
+
+            <label>Lightning Invoice</label>
+
+            <textarea
+                id="invoice"
+                readonly
+            ></textarea>
+
+
+            <button
+                onclick="verifyPayment()"
+                class="payment-button"
+            >
+                ⚡ Verify Payment
+            </button>
+
+            <p id="paymentMessage"></p>
+
+        </section>
+
+
+        <!-- RESULT -->
+
+        <section
+            id="resultCard"
+            class="card hidden"
+        >
+
+            <h2>📊 Security Analysis Result</h2>
+
+            <div class="result-grid">
+
+                <div>
+                    <span class="label">ML Prediction</span>
+                    <strong id="prediction">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">ML Label</span>
+                    <strong id="mlLabel">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Confidence</span>
+                    <strong id="confidence">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Risk Level</span>
+                    <strong id="riskLevel">-</strong>
+                </div>
+
+                <div>
+                    <span class="label">Credits Remaining</span>
+                    <strong id="resultCredits">-</strong>
+                </div>
+
+            </div>
+
+
+            <div class="result-text">
+
+                <h3>Explanation</h3>
+                <p id="explanation">-</p>
+
+                <h3>Recommendation</h3>
+                <p id="recommendation">-</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- SYSTEM FLOW -->
+
+        <section class="card">
+
+            <h2>🔄 SentinelL402 Flow</h2>
+
+            <div class="flow">
+
+                <div class="flow-step">
+                    Client
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    FastAPI
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    AI Agent
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    ML Detector
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    Metering
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    HTTP 402
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    Lightning
+                </div>
+
+                <span>→</span>
+
+                <div class="flow-step">
+                    Retry
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            SentinelL402 — Metered AI Agent
+        </p>
+
+    </footer>
+
+
+    <script src="app.js"></script>
+
+</body>
+</html>

@@ -1,49 +1,93 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
+# ==============================
+# Environment & Secrets
+# ==============================
 
-# Virtual environment
+.env
+.env.*
+!.env.example
+backend/lightning_invoice.json
+# ==============================
+# Python
+# ==============================
+
 .venv/
 venv/
 env/
 
-# Environment variables
-.env
+__pycache__/
+*.py[cod]
+*.pyo
 
-# Jupyter
-.ipynb_checkpoints/
+# ==============================
+# Database
+# ==============================
 
-# ML models
+*.db
+*.sqlite
+*.sqlite3
+
+# ==============================
+# ML Models
+# ==============================
+
+backend/app/ml/models/
+
 *.pt
 *.pth
 *.keras
 *.h5
 *.onnx
 
+# ==============================
 # Datasets
+# ==============================
+
 *.csv
 *.parquet
 *.zip
 
-# Logs
-*.log
+# ==============================
+# Jupyter
+# ==============================
 
-# OS
-.DS_Store
-Thumbs.db
+.ipynb_checkpoints/
 
-# IDE
-.vscode/
-
-# Node
-node_modules/
-
-# Build
-dist/
-build/
-
+# ==============================
 # Testing
+# ==============================
+
 .pytest_cache/
 .coverage
 htmlcov/
+
+# ==============================
+# Logs
+# ==============================
+
+*.log
+
+# ==============================
+# OS
+# ==============================
+
+.DS_Store
+Thumbs.db
+
+# ==============================
+# IDE
+# ==============================
+
+.vscode/
+
+# ==============================
+# Node
+# ==============================
+
+node_modules/
+
+# ==============================
+# Build
+# ==============================
+
+dist/
+build/

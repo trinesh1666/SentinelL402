@@ -2,164 +2,43 @@
 
 ## Metered AI Cybersecurity Intelligence Agent
 
-SentinelL402 is a real-world AI cybersecurity platform that combines deep learning, large language models, retrieval-augmented generation (RAG), AI agents, APIs, HTTP 402, and Bitcoin Lightning micropayments.
+SentinelL402 is a real-world cybersecurity AI platform that combines:
 
-The goal is to provide cybersecurity intelligence as a metered AI service.
+- Machine Learning
+- Large Language Models
+- AI agents
+- FastAPI
+- API-key authentication
+- Usage metering
+- HTTP 402 Payment Required
+- Bitcoin Lightning payments
+- Payment verification
+- Automatic retry after payment
+- SQLite
+- Web dashboard
 
-## Project Vision
+The goal of SentinelL402 is to provide cybersecurity intelligence as a
+metered AI service.
 
-The system will analyze cybersecurity data, detect potential threats, retrieve relevant security knowledge, and use an LLM-based AI agent to generate useful security analysis.
+Users receive a limited number of AI credits. When credits are exhausted,
+the API returns an HTTP 402 response containing a Bitcoin Lightning invoice.
+After the invoice is paid and verified, additional credits are granted and
+the user can retry the request.
 
-Access to selected AI services will be metered using HTTP 402 and Lightning Network micropayments.
+---
 
-## Planned Architecture
+# Project Vision
 
-```text
-User
- |
- v
-Frontend
- |
- v
-FastAPI Backend
- |
- +--> Authentication
- |
- +--> L402 Payment Layer
- |
- v
-AI Agent
- |
- +--------+---------+---------+
- |        |         |         |
- v        v         v         v
-ML      LLM        RAG     External APIs
- |
- v
-Threat Detection
- |
- v
-Security Report
-```
+Traditional AI APIs usually charge through subscriptions or conventional
+payment systems.
 
-## Main Modules
-
-### 1. Deep Learning
-
-A cybersecurity threat-detection model will be trained using publicly available network-security datasets.
-
-### 2. LLM
-
-A domain-specific cybersecurity LLM system will be developed using a pretrained open-source model and domain-specific training/fine-tuning techniques.
-
-### 3. RAG
-
-A cybersecurity knowledge base will provide relevant information to the LLM during analysis.
-
-### 4. AI Agent
-
-The agent will coordinate the ML model, LLM, RAG system, and external tools.
-
-### 5. Backend
-
-FastAPI will expose the AI capabilities through REST APIs.
-
-### 6. L402 Payment
-
-Selected API operations will use HTTP 402 Payment Required and Bitcoin Lightning micropayments.
-
-### 7. Frontend
-
-A web dashboard will allow users to submit data, make payments, and view AI-generated cybersecurity reports.
-
-## Current Development Status
-
-### Day 1
-
-* [x] Project repository structure
-* [x] Python virtual environment
-* [x] Initial dependencies
-* [x] FastAPI application
-* [x] Health-check endpoint
-* [x] Initial documentation
-
-### Upcoming
-
-* [ ] Dataset collection
-* [ ] Data preprocessing
-* [ ] Machine learning baseline
-* [ ] Deep learning threat detection
-* [ ] LLM development
-* [ ] LLM fine-tuning
-* [ ] RAG system
-* [ ] AI agent
-* [ ] Database
-* [ ] Authentication
-* [ ] HTTP 402
-* [ ] Lightning payments
-* [ ] Frontend
-* [ ] Docker
-* [ ] Deployment
-
-## Technology Stack
-
-### AI
-
-* Python
-* PyTorch / TensorFlow
-* Transformers
-* LLM
-* RAG
-* Vector database
-
-### Backend
-
-* FastAPI
-* PostgreSQL
-* Redis
-
-### Frontend
-
-* React / Next.js
-
-### Payments
-
-* Bitcoin
-* Lightning Network
-* HTTP 402
-* L402
-
-### DevOps
-
-* Git
-* GitHub
-* Docker
-* Docker Compose
-
-## Project Structure
+SentinelL402 explores a different model:
 
 ```text
-SentinelL402/
-├── backend/
-├── ml/
-├── llm/
-├── rag/
-├── frontend/
-├── payment/
-├── docs/
-├── tests/
-├── .env.example
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
-
-## Development Environment
-
-The project is currently being developed locally using Python and VS Code.
-
-AI model training will use Google Colab when GPU acceleration is required.
-
-## Status
-
-🚧 Active development — Day 1
+AI capability
+     +
+usage metering
+     +
+HTTP 402
+     +
+Bitcoin Lightning micropayments
