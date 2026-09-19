@@ -113,17 +113,10 @@ def root():
 # ============================================================
 
 @app.get("/health")
-def health():
+def health_check():
     return {
         "status": "healthy",
     }
-@app.get("/health")
-def health_check():
-    return {
-        "status": "ok",
-        "service": "SentinelL402",
-    }
-
 # ============================================================
 # USAGE ENDPOINT
 # ============================================================
