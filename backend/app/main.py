@@ -1,11 +1,12 @@
 from typing import Any, cast
+
 from app.middleware.request_logging import request_logging_middleware
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app import models
-from app.database import Base, engine, get_db, upgrade_schema
+from app.database import get_db
 from app.services.auth_service import get_authenticated_user
 
 from app.agent.agent import SentinelAgent
@@ -58,15 +59,6 @@ from app.schemas.payment import (
     PaymentCreateResponse,
     PaymentVerifyResponse,
 )
-
-
-# ============================================================
-# DATABASE INITIALIZATION
-# ============================================================
-
-Base.metadata.create_all(bind=engine)
-upgrade_schema()
-
 
 # ============================================================
 # FASTAPI APPLICATION
