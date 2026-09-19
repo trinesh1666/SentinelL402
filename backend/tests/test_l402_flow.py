@@ -102,6 +102,8 @@ def test_complete_l402_flow():
 
     try:
         user_id = f"pytest-l402-{uuid.uuid4()}"
+        payment_invoice = f"lnbc-test-l402-flow-{uuid.uuid4().hex}"
+        payment_hash = f"test-l402-payment-hash-{uuid.uuid4().hex}"
 
         user = get_or_create_user(
             db,
@@ -141,8 +143,8 @@ def test_complete_l402_flow():
             payment = Payment(
                 user_id=user.id,
                 amount_sats=10,
-                invoice="lnbc-test-l402-flow",
-                payment_hash="test-l402-payment-hash",
+                invoice=payment_invoice,
+                payment_hash=payment_hash,
                 status="pending",
             )
 
