@@ -1,6 +1,7 @@
 from typing import Any, cast
 
 from app.middleware.request_logging import request_logging_middleware
+from app.config import CORS_ORIGINS
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
