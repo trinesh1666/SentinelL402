@@ -36,7 +36,8 @@ __pycache__/
 # ML Models
 # ==============================
 
-backend/app/ml/models/
+# Keep the required Random Forest model versioned.
+# Other large/generated ML model formats remain ignored.
 
 *.pt
 *.pth
