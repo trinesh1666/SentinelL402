@@ -106,6 +106,7 @@ def create_payload(user_id):
 def test_l402_end_to_end_flow(
     db,
     client,
+    mock_ollama,
 ):
     user_id = f"pytest-l402-end-to-end-{uuid.uuid4()}"
 

@@ -91,6 +91,7 @@ FEATURES = {
 def test_real_api_key_can_call_agent(
     db,
     client,
+    mock_ollama,
 ):
     user_id = f"pytest-real-agent-auth-{uuid.uuid4()}"
 

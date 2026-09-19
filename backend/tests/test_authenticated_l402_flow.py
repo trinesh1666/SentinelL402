@@ -92,6 +92,7 @@ FEATURES = {
 def test_authenticated_l402_agent_flow(
     db,
     client,
+    mock_ollama,
 ):
     user_id = f"pytest-authenticated-l402-{uuid.uuid4()}"
 
