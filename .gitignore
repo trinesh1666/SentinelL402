@@ -5,7 +5,10 @@
 .env
 .env.*
 !.env.example
+
+# Generated Lightning invoice files
 backend/lightning_invoice.json
+backend/scripts/lightning_invoice.json
 # ==============================
 # Python
 # ==============================
