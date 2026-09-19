@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -36,6 +37,88 @@ TestingSessionLocal = sessionmaker(
     autoflush=False,
     bind=test_engine,
 )
+
+@pytest.fixture()
+def mock_ollama():
+    """
+    Replace external Ollama calls with deterministic
+    responses for agent/integration tests.
+    """
+
+    def fake_generate_text(prompt: str, model=None):
+
+        # Only inspect the actual user request.
+        # Do not inspect the system prompt because it contains
+        # security-related keywords by design.
+        user_request = prompt.split(
+            "User request:",
+            1,
+        )[-1].strip().lower()
+
+        security_keywords = [
+            "network",
+            "security",
+            "attack",
+            "threat",
+            "traffic",
+            "cybersecurity",
+            "intrusion",
+            "ddos",
+            "firewall",
+            "packet",
+        ]
+
+        is_security_request = any(
+            keyword in user_request
+            for keyword in security_keywords
+        )
+
+        # Intent classification
+        if "routing component of SentinelL402" in prompt:
+            if is_security_request:
+                return '{"intent":"security"}'
+
+            return '{"intent":"unsupported"}'
+
+        # Tool selection
+        if "tool-selection component of SentinelL402" in prompt:
+            if is_security_request:
+                return (
+                    '{"action":"analyze_security",'
+                    '"tool":"analyze_network_security",'
+                    '"arguments":{},'
+                    '"confidence":1.0}'
+                )
+
+            return (
+                '{"action":"unsupported",'
+                '"tool":"none",'
+                '"arguments":{},'
+                '"confidence":1.0}'
+            )
+
+        # Security-analysis LLM response
+        return (
+            "1. Security Analysis\n"
+            "The machine-learning security detector "
+            "completed the requested analysis.\n\n"
+            "2. Security Risk\n"
+            "The risk level is based on the supplied "
+            "machine-learning classification.\n\n"
+            "3. Recommended Defensive Action\n"
+            "Continue monitoring the network activity "
+            "and investigate according to the supplied "
+            "security classification."
+        )
+
+    with patch(
+        "app.agent.llm_router.generate_text",
+        side_effect=fake_generate_text,
+    ), patch(
+        "app.services.llm_service.generate_text",
+        side_effect=fake_generate_text,
+    ):
+        yield
 
 @pytest.fixture(
     scope="session",

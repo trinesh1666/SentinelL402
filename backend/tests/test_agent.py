@@ -83,8 +83,7 @@ FEATURES = {
     "Idle_Min": 40000.0,
 }
 
-
-def test_agent_selects_security_tool(db):
+def test_agent_selects_security_tool(db, mock_ollama):
     request = AgentRequest(
         user_id="pytest-agent-user",
         intent="Analyze this network traffic for security threats",
@@ -107,7 +106,7 @@ def test_agent_selects_security_tool(db):
     assert result.result["ml_label"] in {"BENIGN", "DDoS"}
 
 
-def test_agent_rejects_unsupported_intent(db):
+def test_agent_rejects_unsupported_intent(db, mock_ollama):
     request = AgentRequest(
         user_id="pytest-agent-unsupported-user",
         intent="Tell me a joke about cricket",
