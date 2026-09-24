@@ -41,5 +41,6 @@ jobs:
 
       - name: Check Alembic migrations
         run: |
+          alembic upgrade head
           alembic current
           alembic check
