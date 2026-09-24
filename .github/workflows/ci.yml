@@ -33,14 +33,14 @@ jobs:
         run: |
           python -m compileall backend/app alembic
 
-      - name: Run tests
-        env:
-          APP_ENV: test
-        run: |
-          pytest backend/tests -q
-
       - name: Check Alembic migrations
         run: |
           alembic upgrade head
           alembic current
           alembic check
+
+      - name: Run tests
+        env:
+          APP_ENV: test
+        run: |
+          pytest backend/tests -q
