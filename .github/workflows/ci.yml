@@ -4,17 +4,13 @@ on:
   push:
     branches:
       - main
-      - "feature/**"
-
   pull_request:
     branches:
       - main
 
-  workflow_dispatch:
-
 jobs:
   test:
-    name: Compile and Test
+    name: Test Backend
     runs-on: ubuntu-latest
 
     steps:
@@ -28,14 +24,22 @@ jobs:
           cache: "pip"
           cache-dependency-path: backend/requirements.txt
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
 
-      - name: Install backend dependencies
-        run: python -m pip install -r backend/requirements.txt
+      - name: Compile Python code
+        run: |
+          python -m compileall backend/app alembic
 
-      - name: Compile backend
-        run: python -m compileall backend/app
+      - name: Run tests
+        env:
+          APP_ENV: test
+        run: |
+          pytest backend/tests -q
 
-      - name: Run test suite
-        run: python -m pytest
+      - name: Check Alembic migrations
+        run: |
+          alembic current
+          alembic check
