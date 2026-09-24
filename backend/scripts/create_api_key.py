@@ -1,8 +1,8 @@
 from app.database import SessionLocal
 from app.services.api_key_service import create_api_key
 
-USER_ID = "docker-demo-user"
-KEY_NAME = "docker-development-key"
+USER_ID = "string"
+KEY_NAME = "sentinell402-development-key"
 
 
 def main():
