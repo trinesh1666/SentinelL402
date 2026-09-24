@@ -2,207 +2,300 @@
 
 ## AI + Lightning + HTTP 402 + APIs
 
-SentinelL402 is a production-oriented AI security API platform that combines **AI agents, machine-learning-based network security analysis, Lightning payments, HTTP 402 payment requirements, API authentication, usage metering, and Docker-based deployment**.
+SentinelL402 is a production-oriented, metered AI security API platform that combines **AI agents, machine-learning-based network security analysis, Bitcoin Lightning payments, HTTP 402 Payment Required, API authentication, usage metering, database persistence, Docker, automated testing, and CI/CD**.
 
-The system is designed around a metered API model: authenticated clients can use security-analysis capabilities while credits are available. When additional credits are required, the API can return an **HTTP 402 Payment Required** response and create a Lightning payment request. After the Lightning payment is verified, credits are restored and the requested operation can continue.
+The core idea is simple:
+
+> **AI API usage is metered with credits. When credits are exhausted, SentinelL402 can return HTTP 402 and create a Bitcoin Lightning payment request. After payment verification, credits are restored and the client can continue using the AI service.**
+
+The project demonstrates how **AI + Machine Learning + AI Agents + Bitcoin Lightning + HTTP 402 + API metering** can be combined into one real-world software system.
 
 ---
 
 ## 🚀 Project Overview
 
-SentinelL402 combines four major areas:
+SentinelL402 contains four major systems:
 
-* **AI Agent** — interprets requests and selects the appropriate tool.
-* **ML Security Analysis** — analyzes network-security data using a trained machine-learning model.
-* **Lightning / L402 Payments** — provides a payment mechanism for metered API usage.
-* **Production API Infrastructure** — authentication, rate limiting, database persistence, logging, error handling, Docker hardening, migrations, automated tests, and CI/CD.
+1. **AI Agent Layer**
+   Interprets requests, determines the requested operation, selects the appropriate tool, validates tool arguments, and executes the operation.
 
-### High-level architecture
+2. **ML-Based Network Security Analysis**
+   Uses a trained Random Forest model to analyze network-security traffic features derived from the CIC-IDS2017 dataset.
+
+3. **Lightning / L402 Payment Layer**
+   Uses Bitcoin Lightning and Nostr Wallet Connect to provide metered payment functionality when API credits are exhausted.
+
+4. **Production API Infrastructure**
+   Provides API-key authentication, rate limiting, usage tracking, database persistence, migrations, logging, error handling, Docker hardening, automated testing, and GitHub Actions CI.
+
+---
+
+## 🏗️ High-Level Architecture
 
 ```text
-                    ┌─────────────────────┐
-                    │       Client        │
-                    └──────────┬──────────┘
-                               │
-                               │ X-API-Key
-                               ▼
-                    ┌─────────────────────┐
-                    │      FastAPI        │
-                    │       API           │
-                    └──────────┬──────────┘
-                               │
-                ┌──────────────┼──────────────┐
-                │              │              │
-                ▼              ▼              ▼
-          Authentication   Rate Limiting   Request Logging
-                │
-                ▼
-          Usage / Credits
-                │
-                ▼
-          ┌─────────────┐
-          │  HTTP 402   │
-          │  if needed  │
-          └──────┬──────┘
-                 │
-                 ▼
-        Lightning Invoice
-                 │
-                 ▼
-          NWC / Lightning
-                 │
-                 ▼
-        Payment Verification
-                 │
-                 ▼
-          Credits Granted
-                 │
-                 ▼
-             AI Agent
-                 │
-                 ▼
-        Security Analysis Tool
-                 │
-                 ▼
-          ML Security Model
-                 │
-                 ▼
-          Security Result
+                         ┌──────────────────────┐
+                         │       Client         │
+                         │ Swagger / Frontend   │
+                         └──────────┬───────────┘
+                                    │
+                               X-API-Key
+                                    │
+                                    ▼
+                    ┌───────────────────────────┐
+                    │        FastAPI API        │
+                    │ Authentication            │
+                    │ Validation                │
+                    │ Rate Limiting             │
+                    │ Request Logging           │
+                    └─────────────┬─────────────┘
+                                  │
+                                  ▼
+                    ┌───────────────────────────┐
+                    │      Usage / Credits      │
+                    │                           │
+                    │ Check available credits   │
+                    └─────────────┬─────────────┘
+                                  │
+                         Credits available?
+                              /       \
+                            YES        NO
+                             │          │
+                             │          ▼
+                             │   ┌───────────────┐
+                             │   │ HTTP 402      │
+                             │   │ Payment       │
+                             │   │ Required      │
+                             │   └───────┬───────┘
+                             │           │
+                             │           ▼
+                             │   ┌───────────────┐
+                             │   │ Lightning     │
+                             │   │ Invoice       │
+                             │   └───────┬───────┘
+                             │           │
+                             │           ▼
+                             │   ┌───────────────┐
+                             │   │ NWC /         │
+                             │   │ Lightning     │
+                             │   └───────┬───────┘
+                             │           │
+                             │           ▼
+                             │   ┌───────────────┐
+                             │   │ Payment       │
+                             │   │ Verification  │
+                             │   └───────┬───────┘
+                             │           │
+                             │           ▼
+                             │      +5 Credits
+                             │           │
+                             └─────┬─────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │     AI Agent      │
+                         │ Intent Routing    │
+                         │ Tool Selection    │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │ Security Tool     │
+                         └─────────┬─────────┘
+                                   │
+                     ┌─────────────┴─────────────┐
+                     │                           │
+                     ▼                           ▼
+            ┌──────────────────┐       ┌──────────────────┐
+            │ Random Forest ML │       │      Ollama      │
+            │ Security Model   │       │       LLM        │
+            └────────┬─────────┘       └────────┬─────────┘
+                     │                           │
+                     └─────────────┬─────────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │ Security Analysis │
+                         │ Result            │
+                         └───────────────────┘
 ```
 
 ---
 
-## ✨ Main Features
+# ✨ Main Features
 
-### 🔐 API Authentication
+## 🤖 AI Agent
 
-SentinelL402 uses API-key authentication through the:
-
-```text
-X-API-Key
-```
-
-header.
-
-The system supports API-key lifecycle operations including creation, authentication, expiration handling, listing, and revocation.
-
----
-
-### ⚡ Lightning + HTTP 402
-
-The application implements a metered payment flow based on HTTP 402.
-
-When a user does not have sufficient credits:
-
-```text
-Client
-  ↓
-Security API
-  ↓
-Insufficient credits
-  ↓
-HTTP 402 Payment Required
-  ↓
-Lightning invoice
-  ↓
-Payment
-  ↓
-Payment verification
-  ↓
-Credits granted
-  ↓
-Request continues
-```
-
-The Lightning integration uses **Nostr Wallet Connect (NWC)**.
-
----
-
-### 🤖 AI Agent
-
-The SentinelL402 agent provides an intent-routing layer between the API and available tools.
+The SentinelL402 agent provides an orchestration layer between the API and AI tools.
 
 The agent can:
 
-1. Receive an authenticated request.
-2. Determine the requested operation.
-3. Select the appropriate tool.
-4. Validate tool arguments.
-5. Execute the metered operation.
-6. Return the result.
+* Receive an authenticated request.
+* Determine the requested operation.
+* Route the request to the appropriate tool.
+* Validate tool arguments.
+* Execute the security-analysis workflow.
+* Use the ML security model.
+* Use an LLM to generate analysis.
+* Return a structured result.
 
-The authenticated identity is maintained separately from user-provided request data.
+The main agent endpoint is:
 
----
-
-### 🧠 LLM Integration
-
-The project integrates with a local Ollama LLM.
-
-Default configuration:
-
-```text
-Model: llama3.2:3b
+```http
+POST /api/agent/run
 ```
 
-The LLM service communicates with Ollama through its generation API.
-
-LLM configuration is environment-driven and can be changed without modifying application code.
-
 ---
 
-### 🛡️ ML-Based Security Analysis
+## 🛡️ ML-Based Network Security Analysis
 
-SentinelL402 includes a network-security analysis pipeline based on machine-learning features derived from network traffic data.
+SentinelL402 includes a network-security analysis pipeline based on traffic features derived from the **CIC-IDS2017** dataset.
 
-The security-analysis API accepts the required security features and uses the trained model to produce an analysis result.
+The system uses a trained **Random Forest** model to classify network traffic.
 
-The project includes a Random Forest security model and associated model-loading functionality.
-
----
-
-## 💳 Metered Usage Model
-
-The project uses credits to control access to metered operations.
-
-The configured payment model grants:
+The analysis pipeline is:
 
 ```text
-1 Lightning payment
+Network Traffic Features
+          ↓
+Feature Validation
+          ↓
+Preprocessing
+          ↓
+Random Forest Model
+          ↓
+Prediction
+          ↓
+Confidence / Probability
+          ↓
+Security Classification
+          ↓
+LLM Analysis
+          ↓
+Final Security Result
+```
+
+The security-analysis API is:
+
+```http
+POST /api/security/analyze
+```
+
+The system validates the required model features before running inference.
+
+---
+
+# 💳 Metered Usage Model
+
+SentinelL402 uses a credit-based metering system.
+
+The configured model is:
+
+```text
+10 sat Lightning payment
         ↓
 5 credits
 ```
 
-The configured payment amount is:
+Credits are consumed by metered AI operations.
+
+When sufficient credits are available:
 
 ```text
-10 sats
+Authenticated Request
+        ↓
+Credit Check
+        ↓
+Consume Credit
+        ↓
+Execute AI Operation
+        ↓
+Return Result
 ```
 
-Payment invoices have an expiration period configured by the application.
+When credits are exhausted:
 
-The payment system also handles:
+```text
+Authenticated Request
+        ↓
+Credits = 0
+        ↓
+HTTP 402 Payment Required
+        ↓
+Lightning Payment Request
+```
 
-* Pending payments
-* Expired payments
-* Payment verification
-* Payment ownership
-* Exact invoice amount verification
-* Idempotent payment handling
-* Transaction errors
-* Payment state transitions
+After successful payment verification:
+
+```text
+Lightning Payment
+        ↓
+Payment Verification
+        ↓
++5 Credits
+        ↓
+AI Request Can Continue
+```
 
 ---
 
-## 🔑 Authentication Flow
+# ⚡ L402 / HTTP 402 Payment Flow
 
-A protected request uses:
+The core payment workflow is:
+
+```text
+1. Client sends authenticated AI request
+                    ↓
+2. SentinelL402 checks available credits
+                    ↓
+3. Credits are insufficient
+                    ↓
+4. API returns HTTP 402 Payment Required
+                    ↓
+5. Lightning payment is created
+                    ↓
+6. Client pays the Lightning invoice
+                    ↓
+7. SentinelL402 verifies the payment
+                    ↓
+8. Credits are restored
+                    ↓
+9. AI operation can continue
+```
+
+This connects:
+
+```text
+HTTP 402
+    +
+Bitcoin Lightning
+    +
+AI APIs
+    +
+Usage Metering
+```
+
+The implementation includes handling for:
+
+* Pending payments
+* Payment expiration
+* Payment ownership
+* Payment amount validation
+* Payment state transitions
+* Payment idempotency
+* Database transaction handling
+* Credit restoration
+
+---
+
+# 🔑 Authentication
+
+Protected endpoints use the following HTTP header:
 
 ```http
 X-API-Key: <your-api-key>
 ```
 
-The authentication process is:
+Authentication flow:
 
 ```text
 Client
@@ -216,11 +309,47 @@ User identification
 Authenticated request
 ```
 
-API keys are not logged by the application.
+API keys are stored securely using hashing rather than storing the raw API key.
+
+The application also supports API-key lifecycle operations including:
+
+* API-key creation
+* API-key validation
+* API-key expiration
+* API-key revocation
+* Authenticated user identification
+
+API keys and other credentials must remain outside Git.
 
 ---
 
-## 🏗️ Project Structure
+# 📊 Usage Tracking
+
+SentinelL402 tracks API usage and remaining credits.
+
+The usage endpoint is:
+
+```http
+GET /api/usage/{user_id}
+```
+
+An authenticated user can access their own usage information.
+
+Example response:
+
+```json
+{
+  "user_id": "string",
+  "credits_remaining": 4,
+  "total_requests": 16
+}
+```
+
+The exact values depend on the current account state.
+
+---
+
+# 🗂️ Project Structure
 
 ```text
 SentinelL402/
@@ -236,7 +365,6 @@ SentinelL402/
 │       └── b278622c3c1d_add_api_key_expiration.py
 │
 ├── backend/
-│   │
 │   ├── app/
 │   │   ├── __init__.py
 │   │   ├── main.py
@@ -275,7 +403,6 @@ SentinelL402/
 │   └── requirements.txt
 │
 ├── .dockerignore
-├── .env
 ├── .env.example
 ├── .gitignore
 ├── alembic.ini
@@ -283,41 +410,45 @@ SentinelL402/
 └── README.md
 ```
 
----
-
-## 🛠️ Technology Stack
-
-| Component           | Technology               |
-| ------------------- | ------------------------ |
-| API                 | FastAPI                  |
-| Language            | Python 3.13              |
-| Database            | SQLite                   |
-| ORM                 | SQLAlchemy               |
-| Migrations          | Alembic                  |
-| Authentication      | API Keys                 |
-| Payment             | Bitcoin Lightning        |
-| Wallet connectivity | Nostr Wallet Connect     |
-| AI Agent            | Python-based agent layer |
-| LLM                 | Ollama                   |
-| Default LLM         | `llama3.2:3b`            |
-| ML                  | Scikit-learn             |
-| Security model      | Random Forest            |
-| Containerization    | Docker                   |
-| CI/CD               | GitHub Actions           |
-| Testing             | Pytest                   |
+> `.env` is intentionally omitted because it contains local environment configuration and is excluded from Git.
 
 ---
 
-## ⚙️ Local Development
+# 🧰 Technology Stack
 
-### 1. Clone the repository
+| Component           | Technology                           |
+| ------------------- | ------------------------------------ |
+| API Framework       | FastAPI                              |
+| Language            | Python 3.13                          |
+| API Documentation   | OpenAPI / Swagger                    |
+| Authentication      | API Keys / `X-API-Key`               |
+| Database            | SQLite for local development/testing |
+| ORM                 | SQLAlchemy                           |
+| Migrations          | Alembic                              |
+| Payment Network     | Bitcoin Lightning                    |
+| Wallet Connectivity | Nostr Wallet Connect                 |
+| AI Agent            | Python-based agent layer             |
+| LLM Runtime         | Ollama                               |
+| Default LLM         | `llama3.2:3b`                        |
+| Machine Learning    | Scikit-learn                         |
+| Security Model      | Random Forest                        |
+| Dataset             | CIC-IDS2017-derived network data     |
+| Containerization    | Docker                               |
+| Testing             | Pytest                               |
+| CI/CD               | GitHub Actions                       |
+
+---
+
+# ⚙️ Local Development
+
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/trinesh1666/SentinelL402.git
 cd SentinelL402
 ```
 
-### 2. Create a virtual environment
+## 2. Create a virtual environment
 
 Windows PowerShell:
 
@@ -331,27 +462,35 @@ Activate it:
 .venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+## 3. Install dependencies
 
 ```powershell
 pip install -r backend\requirements.txt
 ```
 
-### 4. Configure environment variables
+## 4. Configure environment variables
 
-Create:
+Create a local:
 
 ```text
 .env
 ```
 
-Use `.env.example` as the configuration template.
+Use:
 
-Do not commit `.env`.
+```text
+.env.example
+```
+
+as the configuration template.
+
+Never commit `.env` to Git.
+
+Sensitive values such as API keys, wallet credentials, NWC connection strings, and other secrets must never be placed in source code or committed to the repository.
 
 ---
 
-## ▶️ Running the API
+# ▶️ Running the API
 
 From the project root:
 
@@ -359,7 +498,7 @@ From the project root:
 python -m uvicorn backend.app.main:app --reload
 ```
 
-The API can then be accessed through:
+The API will be available at:
 
 ```text
 http://127.0.0.1:8000
@@ -371,17 +510,23 @@ Swagger documentation:
 http://127.0.0.1:8000/docs
 ```
 
+OpenAPI specification:
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
 ---
 
-## ❤️ Health Checks
+# ❤️ Health Checks
 
-### Health
+## Health
 
 ```http
 GET /health
 ```
 
-Expected response:
+Expected:
 
 ```json
 {
@@ -389,43 +534,10 @@ Expected response:
 }
 ```
 
-### Readiness
+## Readiness
 
 ```http
 GET /ready
-```
-
-Expected response:
-
-```json
-{
-  "status": "ready",
-  "database": "ok"
-}
-```
-
----
-
-## 🐳 Docker
-
-The project includes Docker configuration for the API.
-
-Build and start:
-
-```powershell
-docker compose up -d --build
-```
-
-Check containers:
-
-```powershell
-docker compose ps
-```
-
-Check application readiness:
-
-```powershell
-(Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8000/ready).Content
 ```
 
 Expected:
@@ -437,6 +549,36 @@ Expected:
 }
 ```
 
+These endpoints are also used by the Docker healthcheck configuration.
+
+---
+
+# 🐳 Docker
+
+Build and start the API:
+
+```powershell
+docker compose up -d --build
+```
+
+Check the running container:
+
+```powershell
+docker compose ps
+```
+
+Expected state:
+
+```text
+sentinell402-api   Up ... (healthy)
+```
+
+Check readiness:
+
+```powershell
+(Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8000/ready).Content
+```
+
 Stop the services:
 
 ```powershell
@@ -445,31 +587,40 @@ docker compose down
 
 ---
 
-## 🔒 Docker Security
+# 🔒 Docker Security Hardening
 
-The API container includes several hardening controls:
+The Docker deployment includes multiple security controls:
 
-* Runs as a non-root user.
-* Read-only root filesystem.
-* Writable application data through the mounted data directory.
-* Writable `/tmp` through a temporary filesystem.
-* `no-new-privileges`.
-* All Linux capabilities dropped.
-* Memory limit.
-* CPU limit.
-* Localhost-only host port binding.
-* Container healthcheck.
+* Non-root container execution
+* Read-only root filesystem
+* Dedicated writable application-data volume
+* Temporary writable `/tmp` filesystem
+* `no-new-privileges`
+* All Linux capabilities dropped
+* CPU limit
+* Memory limit
+* Localhost-only host port binding
+* Container healthcheck
+* Automatic restart policy
 
-The configured limits are:
+Configured resource limits:
 
 ```text
 Memory: 2 GB
 CPU:    2 cores
 ```
 
+The API is bound to:
+
+```text
+127.0.0.1:8000
+```
+
+rather than exposing the service directly on all host interfaces.
+
 ---
 
-## 🗄️ Database Migrations
+# 🗄️ Database Migrations
 
 Alembic is the authoritative database migration system.
 
@@ -479,7 +630,7 @@ Check the current migration:
 alembic current
 ```
 
-Check for schema differences:
+Check migration consistency:
 
 ```powershell
 alembic check
@@ -499,7 +650,7 @@ b278622c3c1d
 
 ---
 
-## 🧪 Testing
+# 🧪 Testing
 
 Run the complete backend test suite:
 
@@ -507,50 +658,70 @@ Run the complete backend test suite:
 pytest backend\tests -q
 ```
 
-The project has been validated with:
+Validated result:
 
 ```text
 94 passed
 ```
 
-Compilation check:
+Compile Python modules:
 
 ```powershell
 python -m compileall backend\app alembic
 ```
 
-Migration validation:
+Validate migrations:
 
 ```powershell
 alembic check
 ```
 
+The test suite covers areas including:
+
+* Authentication
+* API-key lifecycle
+* Authorization
+* Usage metering
+* Security analysis
+* Agent execution
+* Lightning payment flow
+* Payment verification
+* Payment authorization
+* Payment idempotency
+* Payment state transitions
+* Rate limiting
+* Database integrity
+* Error handling
+* L402 end-to-end workflows
+
 ---
 
-## 🔄 CI/CD
+# 🔄 CI/CD
 
-GitHub Actions automatically validates changes pushed to `main` and pull requests targeting `main`.
+GitHub Actions validates changes pushed to `main` and pull requests targeting `main`.
 
-Workflow:
+The CI workflow performs:
 
 ```text
-Git push / Pull Request
+Git Push / Pull Request
         ↓
-GitHub Actions
-        ↓
-Checkout repository
+Checkout Repository
         ↓
 Python 3.13
         ↓
-Install dependencies
+Install Dependencies
         ↓
 Compile Python
         ↓
-Run backend tests
+Alembic Upgrade
         ↓
-Check Alembic migrations
+Alembic Current
         ↓
-CI result
+Alembic Check
+        ↓
+Run Backend Tests
+        ↓
+CI Result
 ```
 
 Workflow file:
@@ -559,25 +730,27 @@ Workflow file:
 .github/workflows/ci.yml
 ```
 
-The CI pipeline has been successfully validated with a green GitHub Actions run.
+The project has been validated with a **green GitHub Actions CI run**.
 
 ---
 
-## 📡 Important API Areas
+# 📡 Important API Areas
 
-The backend includes API functionality for:
+The backend provides API functionality for:
 
 * Authentication
 * API-key management
 * Usage tracking
 * Security analysis
-* Payment creation
-* Payment verification
 * AI-agent execution
-* Health and readiness
+* Lightning payment creation
+* Lightning payment verification
+* Health checks
+* Readiness checks
+* Rate limiting
 * API-key lifecycle management
 
-Interactive API documentation is available through FastAPI Swagger:
+Interactive documentation:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -585,79 +758,81 @@ http://127.0.0.1:8000/docs
 
 ---
 
-## ⚡ L402 Payment Flow
+# 🧠 AI Security Analysis Pipeline
 
-The core metered-payment workflow is:
+The security-analysis workflow combines machine learning and an LLM:
 
 ```text
-1. Client sends authenticated request
-                ↓
-2. API checks available credits
-                ↓
-3. Credits insufficient
-                ↓
-4. API returns HTTP 402
-                ↓
-5. Lightning payment is created
-                ↓
-6. Client pays invoice
-                ↓
-7. Payment is verified
-                ↓
-8. Credits are granted
-                ↓
-9. Requested operation can proceed
+Authenticated API Request
+          ↓
+Credit Validation
+          ↓
+Feature Validation
+          ↓
+ML Security Model
+          ↓
+Prediction + Confidence
+          ↓
+LLM Analysis
+          ↓
+Structured Security Response
+          ↓
+Credit / Usage Update
 ```
 
-This creates the connection between:
+The ML model provides the security classification, while the LLM can provide additional natural-language analysis.
+
+---
+
+# 🛡️ Security Considerations
+
+SentinelL402 implements several security controls:
+
+* API-key authentication
+* API-key hashing
+* API-key expiration
+* API-key revocation
+* User-scoped authorization
+* Rate limiting
+* Payment ownership validation
+* Payment expiration handling
+* Payment idempotency
+* Exact payment amount verification
+* Database transaction handling
+* Structured logging
+* Error-handling middleware
+* Docker container hardening
+* Non-root container execution
+* Read-only container filesystem
+* Environment-based configuration
+* `.env` exclusion through `.gitignore`
+
+Sensitive credentials must remain outside Git.
+
+Never commit:
 
 ```text
-HTTP 402
-+
-Lightning
-+
-AI API
-+
-Usage Metering
+.env
+API keys
+NWC connection strings
+Wallet secrets
+Private keys
+Database passwords
+LLM provider secrets
 ```
 
 ---
 
-## 🛡️ Security Considerations
+# 🔬 Production Validation
 
-The project includes:
-
-* API-key authentication.
-* API-key expiration.
-* API-key revocation.
-* Rate limiting.
-* Payment ownership validation.
-* Payment expiry handling.
-* Payment idempotency.
-* Exact payment amount verification.
-* Database transaction handling.
-* Structured operational logging.
-* Error-handling middleware.
-* Docker container hardening.
-* Non-root container execution.
-* Read-only container filesystem.
-* Secret exclusion through `.gitignore`.
-* Environment-based configuration.
-
-Sensitive credentials should always remain in environment configuration and must never be committed to Git.
-
----
-
-## 📊 Production Validation
-
-The project has completed the following validation:
+The core system has been validated through automated and live checks.
 
 ```text
 Python compilation                 ✅
 Automated test suite              ✅
 94 tests passed                    ✅
-Alembic current                   ✅
-Alembic schema check              ✅
+Alembic migration validation      ✅
+Docker container                  ✅
 Docker health                     ✅
 Docker readiness                  ✅
 Read-only filesystem              ✅
@@ -668,16 +843,24 @@ Writable /tmp                     ✅
 Capabilities dropped              ✅
 No-new-privileges                 ✅
 Localhost-only port binding       ✅
-Git secret scan                    ✅
-Git whitespace validation         ✅
+X-API-Key authentication          ✅
+OpenAPI authentication schema     ✅
+Unauthenticated request rejected  ✅
+Lightning payment flow            ✅
+HTTP 402 payment flow              ✅
+AI agent workflow                 ✅
+ML security analysis              ✅
+LLM integration                   ✅
+Test database isolation           ✅
 GitHub Actions CI                 ✅ GREEN
+Git working tree                  ✅ CLEAN
 ```
 
 ---
 
-## 🎯 Project Goals
+# 🎯 Project Goals
 
-SentinelL402 demonstrates how several modern technologies can be combined into a single real-world system:
+SentinelL402 demonstrates how modern technologies can be combined into a single real-world metered AI system:
 
 ```text
 Artificial Intelligence
@@ -694,6 +877,8 @@ API Metering
         +
 FastAPI
         +
+Database
+        +
 Docker
         +
 Automated Testing
@@ -701,53 +886,76 @@ Automated Testing
 CI/CD
 ```
 
-The project is intended as a practical demonstration of building a secure, metered AI API rather than only a machine-learning model.
+The project focuses on building a complete AI service infrastructure rather than only training a machine-learning model.
 
 ---
 
-## 👨‍💻 Development Philosophy
+# 👨‍💻 Development Philosophy
 
-The project follows several engineering principles:
+The project follows several software-engineering principles:
 
-* Environment-driven configuration.
-* Explicit database migrations.
-* Automated testing.
-* Defensive error handling.
-* Secure authentication.
-* Payment-state validation.
-* Idempotent payment operations.
-* Structured operational logging.
-* Container security.
-* CI validation before integration.
-
----
-
-## 📌 Project Status
-
-**Core SentinelL402 implementation: Complete**
-
-The core backend, Lightning payment flow, AI-agent integration, security-analysis pipeline, testing, Docker hardening, database migrations, and CI/CD pipeline have been implemented and validated.
-
-Future optional work can include:
-
-* Web frontend/dashboard.
-* Cloud deployment.
-* Production monitoring.
-* External production database.
-* Additional AI-agent tools.
-* Additional ML models.
-* Advanced observability.
+* Environment-driven configuration
+* Explicit database migrations
+* Automated testing
+* Defensive error handling
+* Secure authentication
+* User-scoped authorization
+* Payment-state validation
+* Idempotent payment operations
+* Structured operational logging
+* Container security
+* CI validation before integration
+* Separation of application, service, agent, and ML layers
 
 ---
 
-## 📄 License
+# 📌 Project Status
 
-Add the project's chosen license here before publishing the repository for broader reuse.
+## Core SentinelL402 Implementation: Complete
+
+The core implementation has been developed and validated across:
+
+* FastAPI backend
+* API authentication
+* Usage metering
+* Credit management
+* AI agent orchestration
+* Random Forest network-security analysis
+* Ollama LLM integration
+* Bitcoin Lightning payments
+* HTTP 402 payment flow
+* Payment verification
+* Database migrations
+* Automated testing
+* Docker deployment
+* Docker security hardening
+* GitHub Actions CI/CD
+
+### Optional future work
+
+Future improvements may include:
+
+* Web frontend/dashboard
+* Cloud deployment
+* Production monitoring
+* External production database
+* Additional AI-agent tools
+* Additional ML models
+* Advanced observability
+* Distributed rate limiting
+* Production secret management
+* Metrics and tracing
 
 ---
 
-## ⭐ SentinelL402
+# 📄 License
 
-**AI + Lightning + HTTP 402 + APIs**
+Add the project's chosen license before distributing the repository for broader reuse.
 
-A metered AI security API combining machine learning, AI agents, and Bitcoin Lightning payments.
+---
+
+# 👨‍💻 Project Author
+
+**Trinesh Vardhan**
+
+SentinelL402 was developed as a practical project demonstrating the integration of **AI agents, machine learning, Bitcoin Lightning, HTTP 402, API metering, and production-oriented backend engineering**.
