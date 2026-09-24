@@ -1,9 +1,14 @@
+import logging
+
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.api_key_service import authenticate_api_key
+
+
+logger = logging.getLogger("sentinell402.auth")
 
 
 API_KEY_HEADER = APIKeyHeader(
@@ -20,6 +25,10 @@ def get_authenticated_user(
 ) -> str:
 
     if not api_key:
+        logger.warning(
+            "Authentication failed | reason=missing_api_key"
+        )
+
         raise HTTPException(
             status_code=401,
             detail="Missing API key.",
@@ -28,6 +37,10 @@ def get_authenticated_user(
     api_key = api_key.strip()
 
     if not api_key:
+        logger.warning(
+            "Authentication failed | reason=empty_api_key"
+        )
+
         raise HTTPException(
             status_code=401,
             detail="Missing API key.",
@@ -39,9 +52,18 @@ def get_authenticated_user(
     )
 
     if not user:
+        logger.warning(
+            "Authentication failed | reason=invalid_api_key"
+        )
+
         raise HTTPException(
             status_code=403,
             detail="Invalid API key.",
         )
+
+    logger.info(
+        "Authentication successful | user_id=%s",
+        user.user_id,
+    )
 
     return user.user_id

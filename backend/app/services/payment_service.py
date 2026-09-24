@@ -1,13 +1,19 @@
+import logging
 from datetime import datetime, timedelta, timezone
-
+from typing import cast
+from sqlalchemy import exc
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-
-from app.models import Account, Payment
+from app.middleware.database_errors import DatabaseServiceError
+from app.models import Account, Payment, User
+from app.schemas import payment
 from app.services.lightning_service import (
     PAYMENT_AMOUNT_SATS,
     check_lightning_payment,
     create_lightning_invoice,
 )
+
+logger = logging.getLogger("sentinell402.payment")
 
 CREDITS_PER_PAYMENT = 5
 PAYMENT_EXPIRY_MINUTES = 60
@@ -18,17 +24,17 @@ def _utc_now():
 
 
 def _is_payment_expired(payment: Payment) -> bool:
-    if payment.expires_at is None:
-        return False
+    expires_at = cast(datetime | None, payment.expires_at)
 
-    expires_at = payment.expires_at
+    if expires_at is None:
+        return False
 
     # SQLite may return DateTime values without timezone information.
     # Treat those values as UTC.
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
 
-    return expires_at <= _utc_now()
+    return bool(expires_at <= _utc_now())
 
 
 def create_payment(db: Session, user_id: str):
@@ -50,12 +56,23 @@ def create_payment(db: Session, user_id: str):
     if existing_payment:
         # Reuse the existing invoice if it has not expired.
         if not _is_payment_expired(existing_payment):
+            logger.info(
+                "Payment request reused | user_id=%s | payment_id=%s",
+                user_id,
+                existing_payment.id,
+            )
             return existing_payment
 
         # The invoice is too old. Mark it expired before creating
         # a fresh payment request.
-        existing_payment.status = "expired"
-        db.commit()
+        setattr(existing_payment, "status", "expired")
+        try:
+            db.commit()
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise DatabaseServiceError(
+            "Failed to update payment expiration state."
+        ) from exc
 
     # Create a new Lightning invoice.
     invoice_response = create_lightning_invoice(
@@ -89,8 +106,15 @@ def create_payment(db: Session, user_id: str):
     )
 
     db.add(payment)
-    db.commit()
-    db.refresh(payment)
+
+    try:
+        db.commit()
+        db.refresh(payment)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise DatabaseServiceError(
+            "Failed to save payment."
+        ) from exc
 
     return payment
 
@@ -132,8 +156,8 @@ def mark_payment_paid(
     if not payment:
         return None
 
-    payment.status = "paid"
-    payment.payment_hash = payment_hash
+    setattr(payment, "status", "paid")
+    setattr(payment, "payment_hash", payment_hash)
 
     account = (
         db.query(Account)
@@ -141,17 +165,32 @@ def mark_payment_paid(
         .first()
     )
 
-    if account and payment.credits_granted == 0:
-        account.credits += CREDITS_PER_PAYMENT
-        payment.credits_granted = CREDITS_PER_PAYMENT
+    if account is not None and cast(int, payment.credits_granted) == 0:
+        setattr(
+            account,
+            "credits",
+            cast(int, account.credits) + CREDITS_PER_PAYMENT,
+        )
+        setattr(payment, "credits_granted", CREDITS_PER_PAYMENT)
 
-    db.commit()
-    db.refresh(payment)
+    try:
+        db.commit()
+        db.refresh(payment)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise DatabaseServiceError(
+            "Failed to finalize payment."
+        ) from exc
 
     return payment
 
 
-def verify_payment(db: Session, payment_id: int):
+def verify_payment(
+    db: Session,
+    payment_id: int,
+    authenticated_user_id: str | None = None,
+    user_id: str | None = None,
+):
     payment = (
         db.query(Payment)
         .filter(Payment.id == payment_id)
@@ -161,59 +200,99 @@ def verify_payment(db: Session, payment_id: int):
     if not payment:
         return None
 
+    effective_user_id = (
+        authenticated_user_id
+        if authenticated_user_id is not None
+        else user_id
+    )
+
+    if effective_user_id is not None:
+        payment_owner = (
+            db.query(User)
+            .filter(User.id == payment.user_id)
+            .first()
+        )
+
+        if payment_owner is None or cast(str, payment_owner.user_id) != effective_user_id:
+            return None
+
     # Payment is already confirmed.
-    # Only grant credits if they have not been granted yet.
-    if payment.status == "paid":
-        if payment.credits_granted == 0:
+    if cast(str, payment.status) == "paid":
+        if cast(int, payment.credits_granted) == 0:
             account = (
                 db.query(Account)
-                .filter(
-                    Account.user_id == payment.user_id
-                )
+                .filter(Account.user_id == payment.user_id)
                 .first()
             )
 
-            if account:
-                account.credits += CREDITS_PER_PAYMENT
-                payment.credits_granted = CREDITS_PER_PAYMENT
-
-                db.commit()
-                db.refresh(payment)
+            if account is not None:
+                setattr(
+                    account,
+                    "credits",
+                    cast(int, account.credits) + CREDITS_PER_PAYMENT,
+                )
+                setattr(payment, "credits_granted", CREDITS_PER_PAYMENT)
+                try:
+                    db.commit()
+                    db.refresh(payment)
+                except SQLAlchemyError as exc:
+                    db.rollback()
+                    raise DatabaseServiceError(
+                        "Failed to restore payment credits."
+                    ) from exc
 
         return payment
 
-    if payment.status == "expired":
+    if cast(str, payment.status) == "expired":
         return payment
 
-    if not payment.payment_hash:
+    if not cast(str | None, payment.payment_hash):
         raise RuntimeError(
             "Payment does not contain a payment hash."
         )
 
     invoice_status = check_lightning_payment(
-        payment.payment_hash
+        cast(str, payment.payment_hash)
     )
 
-    paid = getattr(
-        invoice_status,
-        "paid",
-        False,
-    )
+    paid = getattr(invoice_status, "paid", False)
+    invoice_amount = getattr(invoice_status, "amount", None)
+    expected_amount = payment.amount_sats * 1000
 
     if not paid:
-        # Only expire it when its local expiry time has passed.
         if _is_payment_expired(payment):
-            payment.status = "expired"
+            setattr(payment, "status", "expired")
         else:
-            payment.status = "pending"
+            setattr(payment, "status", "pending")
 
-        db.commit()
-        db.refresh(payment)
+        try:
+            db.commit()
+            db.refresh(payment)
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise DatabaseServiceError(
+                "Failed to update payment status."
+            ) from exc
 
         return payment
 
-    # Lightning payment confirmed.
-    payment.status = "paid"
+    # A Lightning payment is only valid when the
+    # amount paid exactly matches the invoice amount.
+    if invoice_amount != expected_amount:
+        setattr(payment, "status", "pending")
+
+        try:
+            db.commit()
+            db.refresh(payment)
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise DatabaseServiceError(
+                "Failed to update payment status."
+            ) from exc
+
+        return payment
+
+    setattr(payment, "status", "paid")
 
     account = (
         db.query(Account)
@@ -221,11 +300,25 @@ def verify_payment(db: Session, payment_id: int):
         .first()
     )
 
-    if account and payment.credits_granted == 0:
-        account.credits += CREDITS_PER_PAYMENT
-        payment.credits_granted = CREDITS_PER_PAYMENT
+    if account is not None and cast(int, payment.credits_granted) == 0:
+        setattr(
+            account,
+            "credits",
+            cast(int, account.credits) + CREDITS_PER_PAYMENT,
+        )
+        setattr(
+            payment,
+            "credits_granted",
+            CREDITS_PER_PAYMENT,
+        )
 
-    db.commit()
-    db.refresh(payment)
+    try:
+        db.commit()
+        db.refresh(payment)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise DatabaseServiceError(
+            "Failed to finalize payment verification."
+        ) from exc
 
     return payment

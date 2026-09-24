@@ -121,8 +121,10 @@ def test_complete_l402_flow():
             .first()
         )
 
+        assert account is not None
+
         # Start with zero credits.
-        account.credits = 0
+        setattr(account, "credits", 0)
         db.commit()
 
         payload = {
@@ -180,6 +182,7 @@ def test_complete_l402_flow():
 
         class FakePaymentStatus:
             paid = True
+            amount = 10_000
 
         with patch(
             "app.services.payment_service.check_lightning_payment",

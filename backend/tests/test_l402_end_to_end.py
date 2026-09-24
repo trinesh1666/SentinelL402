@@ -196,6 +196,7 @@ def test_l402_end_to_end_flow(
 
         class FakePaymentStatus:
             paid = True
+            amount = 10_000
 
         with patch(
             "app.services.payment_service.check_lightning_payment",

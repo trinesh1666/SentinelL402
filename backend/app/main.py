@@ -1,10 +1,15 @@
 from typing import Any, cast
 
+from app.logging_config import configure_logging
+
 from app.middleware.request_logging import request_logging_middleware
 from app.config import CORS_ORIGINS
+
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+
+from app.services.health_service import check_database
 
 from app import models
 from app.database import get_db
@@ -13,7 +18,26 @@ from app.services.auth_service import get_authenticated_user
 from app.agent.agent import SentinelAgent
 from app.agent.models import AgentRequest
 
+from app.schemas.api_key import (
+    APIKeyResponse,
+    APIKeyRevokeResponse,
+)
 
+from app.middleware.error_handling import (
+    DatabaseServiceError,
+    LLMServiceError,
+    LightningServiceError,
+    database_service_exception_handler,
+    llm_service_exception_handler,
+    lightning_service_exception_handler,
+    unexpected_exception_handler,
+)
+
+from app.services.api_key_service import (
+    create_api_key,
+    list_user_api_keys,
+    revoke_api_key,
+)
 from app.schemas.agent import (
     AgentRequestSchema,
     AgentResponseSchema,
@@ -64,12 +88,32 @@ from app.schemas.payment import (
 # ============================================================
 # FASTAPI APPLICATION
 # ============================================================
-
+configure_logging()
 app = FastAPI(
     title="SentinelL402 API",
     version="0.2.0",
 )
+@app.get("/ready")
+def readiness_check(db: Session = Depends(get_db)):
+    if not check_database(db):
+        raise HTTPException(
+            status_code=503,
+            detail="Service is not ready.",
+        )
 
+    return {
+        "status": "ready",
+        "database": "ok",
+    }
+
+app.add_exception_handler(
+    Exception,
+    unexpected_exception_handler,
+)
+app.add_exception_handler(
+    LLMServiceError,
+    llm_service_exception_handler,
+)
 app.middleware("http")(request_logging_middleware)
 
 # ============================================================
@@ -78,15 +122,11 @@ app.middleware("http")(request_logging_middleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5500",
-        "http://localhost:5500",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # ============================================================
 # ROOT ENDPOINT
@@ -172,10 +212,11 @@ def register_user(
     from app.services.api_key_service import create_api_key
 
     raw_api_key, api_key_record = create_api_key(
-        db=db,
-        user_id=request.user_id,
-        name=request.api_key_name,
-    )
+    db=db,
+    user_id=request.user_id,
+    name=request.api_key_name,
+    expires_in_days=request.expires_in_days,
+)
 
     account = (
         db.query(models.Account)
@@ -190,6 +231,7 @@ def register_user(
         email=cast(Any, user.email),
         api_key=raw_api_key,
         api_key_name=cast(str, api_key_record.name),
+        expires_at=cast(Any, api_key_record.expires_at),
         initial_credits=(
             cast(int, account.credits)
             if account
@@ -281,9 +323,21 @@ def analyze(
     # --------------------------------------------------------
 
     result = analyze_security_event(
-        event.event_type,
-        event.severity,
-        event.description,
+        event_type=event.event_type,
+        severity=event.severity,
+        description=event.description,
+        ml_prediction=0,
+        ml_label="BENIGN",
+        confidence=0.0,
+        risk_level="LOW",
+        ml_explanation=(
+            "No ML classification result was provided for "
+            "this direct analysis request."
+        ),
+        ml_recommendation=(
+            "Continue monitoring and request a full ML "
+            "analysis for a definitive classification."
+        ),
     )
 
     # --------------------------------------------------------
@@ -430,6 +484,7 @@ def payment_verify(
     payment = verify_payment(
         db,
         payment_id,
+        authenticated_user_id,
     )
 
     if not payment:
@@ -524,4 +579,61 @@ def run_agent(
         action=result.action,
         tool=result.tool,
         result=result.result,
+    )
+@app.get(
+    "/api/auth/api-keys",
+    response_model=list[APIKeyResponse],
+    dependencies=[Depends(check_rate_limit)],
+)
+def get_api_keys(
+    user_id: str = Depends(
+        get_authenticated_user
+    ),
+    db: Session = Depends(get_db),
+):
+    api_keys = list_user_api_keys(
+        db=db,
+        user_id=user_id,
+    )
+
+    return [
+        APIKeyResponse(
+            id=cast(int, api_key.id),
+            name=cast(Any, api_key.name),
+            active=bool(api_key.active),
+            created_at=cast(Any, api_key.created_at),
+            last_used_at=cast(Any, api_key.last_used_at),
+            expires_at=cast(Any, api_key.expires_at),
+        )
+        for api_key in api_keys
+    ]
+@app.post(
+    "/api/auth/api-keys/{api_key_id}/revoke",
+    response_model=APIKeyRevokeResponse,
+    dependencies=[Depends(check_rate_limit)],
+)
+def revoke_api_key_endpoint(
+    api_key_id: int,
+    user_id: str = Depends(
+        get_authenticated_user
+    ),
+    db: Session = Depends(get_db),
+):
+    api_key = revoke_api_key(
+        db=db,
+        user_id=user_id,
+        api_key_id=api_key_id,
+    )
+
+    if not api_key:
+        raise HTTPException(
+            status_code=404,
+            detail="API key not found.",
+        )
+
+    return APIKeyRevokeResponse(
+        id=cast(int, api_key.id),
+        name=cast(Any, api_key.name),
+        active=bool(api_key.active),
+        message="API key revoked successfully.",
     )

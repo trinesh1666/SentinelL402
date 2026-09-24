@@ -1,5 +1,6 @@
+import hashlib
 import time
-from collections import defaultdict, deque
+from collections import deque
 from threading import Lock
 
 
@@ -19,18 +20,36 @@ class RateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
 
-        self.requests = defaultdict(deque)
+        self.requests: dict[str, deque[float]] = {}
         self.lock = Lock()
+
+    @staticmethod
+    def _key_identifier(client_key: str) -> str:
+        """Return a non-sensitive identifier for an API key."""
+        return hashlib.sha256(
+            client_key.encode("utf-8")
+        ).hexdigest()
 
     def allow(self, client_key: str) -> bool:
         now = time.time()
+        identifier = self._key_identifier(client_key)
 
         with self.lock:
-            timestamps = self.requests[client_key]
+            timestamps = self.requests.get(identifier)
+
+            if timestamps is None:
+                timestamps = deque()
+                self.requests[identifier] = timestamps
 
             # Remove requests outside the current window.
             while timestamps and timestamps[0] <= now - self.window_seconds:
                 timestamps.popleft()
+
+            # Remove stale client entries so memory does not grow forever.
+            if not timestamps:
+                self.requests.pop(identifier, None)
+                timestamps = deque()
+                self.requests[identifier] = timestamps
 
             if len(timestamps) >= self.max_requests:
                 return False

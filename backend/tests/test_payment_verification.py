@@ -1,4 +1,5 @@
 import uuid
+from typing import cast
 from unittest.mock import patch
 
 from app.models import Account, Payment
@@ -43,6 +44,9 @@ def test_payment_verification_grants_credits_once(db):
     # pretend the invoice has actually been paid.
     class FakePaymentStatus:
         paid = True
+        amount = 10_000
+
+    payment_id = cast(int, payment.id)
 
     with patch(
         "app.services.payment_service.check_lightning_payment",
@@ -50,12 +54,13 @@ def test_payment_verification_grants_credits_once(db):
     ):
         verified_payment = verify_payment(
             db,
-            payment.id,
+            payment_id,
+            user_id,
         )
 
     assert verified_payment is not None
-    assert verified_payment.status == "paid"
-    assert verified_payment.credits_granted == 5
+    assert cast(str, verified_payment.status) == "paid"
+    assert cast(int, verified_payment.credits_granted) == 5
 
     db.refresh(account)
 
@@ -64,13 +69,14 @@ def test_payment_verification_grants_credits_once(db):
     # Verify the same payment again.
     verified_payment_again = verify_payment(
         db,
-        payment.id,
+        payment_id,
     )
 
+    assert verified_payment_again is not None
 
     db.refresh(account)
 
     # Credits must NOT increase again.
-    assert verified_payment_again.status == "paid"
-    assert verified_payment_again.credits_granted == 5
+    assert cast(str, verified_payment_again.status) == "paid"
+    assert cast(int, verified_payment_again.credits_granted) == 5
     assert account.credits == 5

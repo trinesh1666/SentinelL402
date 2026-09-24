@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
 from app.models import Account
 from app.services.api_key_service import create_api_key
@@ -149,7 +150,45 @@ def test_inactive_api_key_returns_403(
         name="pytest-inactive-key",
     )
 
-    api_key_record.active = 0
+    setattr(api_key_record, "active", 0)
+
+    db.commit()
+
+    response = client.get(
+        f"/api/usage/{user_id}",
+        headers={
+            "X-API-Key": api_key,
+        },
+    )
+
+    assert response.status_code == 403
+
+    assert response.json() == {
+        "detail": "Invalid API key."
+    }
+
+def test_expired_api_key_returns_403(
+    client,
+    db,
+):
+    user_id = f"pytest-expired-{uuid.uuid4()}"
+
+    create_test_user(
+        db,
+        user_id,
+    )
+
+    api_key, api_key_record = create_api_key(
+        db=db,
+        user_id=user_id,
+        name="pytest-expired-key",
+    )
+
+    setattr(
+        api_key_record,
+        "expires_at",
+        datetime.now(timezone.utc) - timedelta(minutes=1),
+    )
 
     db.commit()
 

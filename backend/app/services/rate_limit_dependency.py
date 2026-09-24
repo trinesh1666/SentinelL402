@@ -14,6 +14,12 @@ def check_rate_limit(request: Request):
 
     client_key = api_key.strip()
 
+    if not client_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing API key.",
+        )
+
     if not rate_limiter.allow(client_key):
         raise HTTPException(
             status_code=429,

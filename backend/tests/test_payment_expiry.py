@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import cast
 
 from app.models import Account, Payment, User
 from app.services import payment_service
@@ -55,12 +56,12 @@ def test_unexpired_pending_payment_is_reused(db, monkeypatch):
 
     result = payment_service.create_payment(
         db,
-        user.user_id,
+        cast(str, user.user_id),
     )
 
-    assert result.id == payment.id
-    assert result.status == "pending"
-    assert result.invoice == "existing-invoice"
+    assert cast(int, result.id) == cast(int, payment.id)
+    assert cast(str, result.status) == "pending"
+    assert cast(str, result.invoice) == "existing-invoice"
 
 
 def test_expired_pending_payment_creates_new_payment(
@@ -98,21 +99,24 @@ def test_expired_pending_payment_creates_new_payment(
 
     result = payment_service.create_payment(
         db,
-        user.user_id,
+        cast(str, user.user_id),
     )
 
     db.refresh(old_payment)
 
-    assert old_payment.status == "expired"
+    assert cast(str, old_payment.status) == "expired"
 
-    assert result.id != old_payment.id
-    assert result.status == "pending"
-    assert result.invoice == "new-invoice"
-    assert result.payment_hash == "new-hash"
+    assert cast(int, result.id) != cast(int, old_payment.id)
+    assert cast(str, result.status) == "pending"
+    assert cast(str, result.invoice) == "new-invoice"
+    assert cast(str, result.payment_hash) == "new-hash"
     assert result.expires_at is not None
-    assert result.expires_at > datetime.now(timezone.utc).replace(
-        tzinfo=None
-    )
+
+    expires_at = cast(datetime, result.expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    assert expires_at > datetime.now(timezone.utc)
 
 
 def test_paid_payment_is_not_expired(db):
@@ -136,11 +140,14 @@ def test_paid_payment_is_not_expired(db):
     db.commit()
     db.refresh(payment)
 
+    payment_id = cast(int, payment.id)
+
     result = payment_service.verify_payment(
         db,
-        payment.id,
+        payment_id,
+        cast(str, user.user_id),
     )
 
     assert result is not None
-    assert result.status == "paid"
-    assert result.credits_granted == 5
+    assert cast(str, result.status) == "paid"
+    assert cast(int, result.credits_granted) == 5

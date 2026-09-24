@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -21,11 +23,22 @@ class RegisterRequest(BaseModel):
         description="Name for the generated API key",
     )
 
+    expires_in_days: int | None = Field(
+        default=None,
+        gt=0,
+        le=3650,
+        description=(
+            "Optional API-key lifetime in days. "
+            "Leave null for no expiration."
+        ),
+    )
+
 
 class RegisterResponse(BaseModel):
     user_id: str
     email: EmailStr | None
     api_key: str
     api_key_name: str
+    expires_at: datetime | None
     initial_credits: int
     message: str

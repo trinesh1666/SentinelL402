@@ -1,3 +1,5 @@
+from typing import cast
+
 from app.main import app, get_authenticated_user
 from app.models import Account, Payment, User
 from app.schemas.security_analysis import SecurityAnalysisResponse
@@ -110,18 +112,16 @@ def test_final_l402_closed_loop(client, db, monkeypatch):
 
     def fake_security_analysis(db, request):
         return SecurityAnalysisResponse(
-        source=request.source,
-        event_type=request.event_type,
-        severity=request.severity,
-        description="Final L402 integration test",
-        ml_prediction=0,
-        ml_label="BENIGN",
-        risk_level="low",
-        confidence=0.99,
-        explanation="The test network flow is classified as benign.",
-        recommendation="No immediate action is required.",
-        credits_remaining=1,
-    )
+            source=request.source,
+            event_type=request.event_type,
+            ml_prediction=0,
+            ml_label="BENIGN",
+            risk_level="low",
+            confidence=0.99,
+            explanation="The test network flow is classified as benign.",
+            recommendation="No immediate action is required.",
+            credits_remaining=1,
+        )
     monkeypatch.setattr(
         "app.services.metered_security_service.perform_security_analysis",
         fake_security_analysis,
@@ -161,6 +161,7 @@ def test_final_l402_closed_loop(client, db, monkeypatch):
 
     class FakePaymentResult:
         paid = True
+        amount = 10_000
 
     monkeypatch.setattr(
         "app.services.payment_service.check_lightning_payment",
@@ -171,11 +172,13 @@ def test_final_l402_closed_loop(client, db, monkeypatch):
 
     verified_payment = verify_payment(
         db,
-        pending_payment.id,
+        cast(int, pending_payment.id),
+        cast(str, user.user_id),
     )
 
-    assert verified_payment.status == "paid"
-    assert verified_payment.credits_granted == 5
+    assert verified_payment is not None
+    assert cast(str, verified_payment.status) == "paid"
+    assert cast(int, verified_payment.credits_granted) == 5
 
     retry_response = client.post(
         "/api/security/analyze",

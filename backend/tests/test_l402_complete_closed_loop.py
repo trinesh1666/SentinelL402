@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import cast
 
 from app.main import app, get_authenticated_user
 from app.models import Account, Payment, User
@@ -209,13 +210,14 @@ def test_complete_l402_closed_loop(client, db, monkeypatch):
     db.commit()
     db.refresh(payment)
 
-    payment_id = payment.id
+    payment_id = cast(int, payment.id)
 
     # ---------------------------------------------------------
     # 7. Mock Lightning lookup as PAID
     # ---------------------------------------------------------
     class FakeInvoiceStatus:
         paid = True
+        amount = 10_000
 
     monkeypatch.setattr(
         "app.services.payment_service.check_lightning_payment",
@@ -228,11 +230,12 @@ def test_complete_l402_closed_loop(client, db, monkeypatch):
     verified_payment = verify_payment(
         db,
         payment_id,
+        cast(str, user.user_id),
     )
 
     assert verified_payment is not None
-    assert verified_payment.status == "paid"
-    assert verified_payment.credits_granted == 5
+    assert cast(str, verified_payment.status) == "paid"
+    assert cast(int, verified_payment.credits_granted) == 5
 
     # ---------------------------------------------------------
     # 9. Verify credits were added

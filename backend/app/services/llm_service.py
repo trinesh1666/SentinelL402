@@ -1,12 +1,12 @@
 import os
-
+import logging
 import requests
 from dotenv import load_dotenv
 
-
+from app.middleware.error_handling import LLMServiceError
 load_dotenv()
 
-
+logger = logging.getLogger("sentinell402.llm")
 OLLAMA_URL = os.getenv(
     "OLLAMA_URL",
     "http://localhost:11434/api/generate",
@@ -30,17 +30,40 @@ def generate_text(
         "stream": False,
     }
 
-    response = requests.post(
-        OLLAMA_URL,
-        json=payload,
-        timeout=120,
-    )
+    try:
+        logger.info("LLM request started")
+        response = requests.post(
+            OLLAMA_URL,
+            json=payload,
+            timeout=120,
+        )
 
-    response.raise_for_status()
+        response.raise_for_status()
 
-    data = response.json()
+        data = response.json()
 
-    return data["response"]
+        generated_text = data.get("response")
+
+        if not isinstance(generated_text, str):
+            raise LLMServiceError(
+                "LLM response did not contain a valid response field."
+            )
+
+        logger.info("LLM request completed")
+        return generated_text
+
+    except LLMServiceError:
+        raise
+
+    except requests.RequestException as exc:
+        raise LLMServiceError(
+            "LLM service request failed."
+        ) from exc
+
+    except (ValueError, TypeError) as exc:
+        raise LLMServiceError(
+            "LLM service returned an invalid response."
+        ) from exc
 
 
 def analyze_security_event(

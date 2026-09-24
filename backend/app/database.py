@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sqlalchemy import create_engine, event, inspect, text
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import (
     declarative_base,
     sessionmaker,
@@ -61,31 +61,13 @@ SessionLocal = sessionmaker(
 # Base model
 Base = declarative_base()
 
-
-def upgrade_schema():
-    """Apply small additive migrations to existing SQLite databases."""
-    columns = {
-        column["name"]
-        for column in inspect(engine).get_columns("payments")
-    }
-
-    if "expires_at" not in columns:
-        with engine.begin() as connection:
-            connection.execute(
-                text(
-                    "ALTER TABLE payments "
-                    "ADD COLUMN expires_at DATETIME"
-                )
-            )
-
-
 # Dependency
 def get_db():
-
     db = SessionLocal()
-
     try:
         yield db
-
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()

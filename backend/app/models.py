@@ -95,11 +95,15 @@ class APIKey(Base):
         nullable=True,
     )
 
+    expires_at = Column(
+        DateTime,
+        nullable=True,
+    )
+
     user = relationship(
         "User",
         back_populates="api_keys",
     )
-
 
 class Account(Base):
     __tablename__ = "accounts"

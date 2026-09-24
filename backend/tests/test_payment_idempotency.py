@@ -1,3 +1,5 @@
+from typing import cast
+
 from app.models import Account, Payment, User
 from app.services.payment_service import verify_payment
 
@@ -42,7 +44,7 @@ def test_paid_payment_does_not_grant_credits_twice(db):
             db.commit()
             db.refresh(account)
 
-        account.credits = 0
+        setattr(account, "credits", 0)
         db.commit()
 
     payment = Payment(
@@ -57,34 +59,40 @@ def test_paid_payment_does_not_grant_credits_twice(db):
     db.commit()
     db.refresh(payment)
 
-    payment_id = payment.id
+    payment_id = cast(int, payment.id)
 
     # First verification should grant credits.
     first_result = verify_payment(
         db,
         payment_id,
+        user_id,
     )
+
+    assert first_result is not None
 
     db.refresh(account)
 
-    first_credits = account.credits
+    first_credits = cast(int, account.credits)
 
-    assert first_result.status == "paid"
-    assert first_result.credits_granted == 5
+    assert cast(str, first_result.status) == "paid"
+    assert cast(int, first_result.credits_granted) == 5
     assert first_credits == 5
 
     # Second verification must NOT grant another 5 credits.
     second_result = verify_payment(
         db,
         payment_id,
+        user_id,
     )
+
+    assert second_result is not None
 
     db.refresh(account)
 
-    second_credits = account.credits
+    second_credits = cast(int, account.credits)
 
-    assert second_result.status == "paid"
-    assert second_result.credits_granted == 5
+    assert cast(str, second_result.status) == "paid"
+    assert cast(int, second_result.credits_granted) == 5
     assert second_credits == 5
 
     print()
