@@ -1,516 +1,901 @@
-const API_BASE = "http://127.0.0.1:8000";
+/* =========================================================
+   SENTINELL402 FRONTEND APPLICATION
+========================================================= */
+
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+
+const API_BASE = "http://127.0.0.1:8001";
 
 const USER_ID = "l402-402-demo-user";
 
+const API_KEY_STORAGE_KEY =
+    "sentinell402_api_key";
+
+
 let currentPaymentId = null;
 
+let paymentSource = null;
 
-// ============================================================
-// EXACT 78 CIC-IDS2017 FEATURES
-// ============================================================
+
+/* =========================================================
+   CIC-IDS2017 - COMPLETE 78 FEATURES
+========================================================= */
+ 
+/* =========================================================
+   CIC-IDS2017 - COMPLETE 78 FEATURES
+========================================================= */
 
 const FEATURES = {
-    "Destination_Port": 80.0,
-    "Flow_Duration": 1000000.0,
-    "Total_Fwd_Packets": 10.0,
-    "Total_Backward_Packets": 8.0,
-    "Total_Length_of_Fwd_Packets": 5000.0,
-    "Total_Length_of_Bwd_Packets": 4000.0,
-    "Fwd_Packet_Length_Max": 1000.0,
-    "Fwd_Packet_Length_Min": 100.0,
-    "Fwd_Packet_Length_Mean": 500.0,
-    "Fwd_Packet_Length_Std": 100.0,
-    "Bwd_Packet_Length_Max": 1000.0,
-    "Bwd_Packet_Length_Min": 100.0,
-    "Bwd_Packet_Length_Mean": 500.0,
-    "Bwd_Packet_Length_Std": 100.0,
-    "Flow_Bytes/s": 9000.0,
-    "Flow_Packets/s": 18.0,
-    "Flow_IAT_Mean": 50000.0,
-    "Flow_IAT_Std": 10000.0,
-    "Flow_IAT_Max": 100000.0,
-    "Flow_IAT_Min": 1000.0,
-    "Fwd_IAT_Total": 500000.0,
-    "Fwd_IAT_Mean": 50000.0,
-    "Fwd_IAT_Std": 10000.0,
-    "Fwd_IAT_Max": 100000.0,
-    "Fwd_IAT_Min": 1000.0,
-    "Bwd_IAT_Total": 400000.0,
-    "Bwd_IAT_Mean": 50000.0,
-    "Bwd_IAT_Std": 10000.0,
-    "Bwd_IAT_Max": 100000.0,
-    "Bwd_IAT_Min": 1000.0,
-    "Fwd_PSH_Flags": 0.0,
-    "Bwd_PSH_Flags": 0.0,
-    "Fwd_URG_Flags": 0.0,
-    "Bwd_URG_Flags": 0.0,
-    "Fwd_Header_Length": 200.0,
-    "Bwd_Header_Length": 160.0,
-    "Fwd_Packets/s": 10.0,
-    "Bwd_Packets/s": 8.0,
-    "Min_Packet_Length": 100.0,
-    "Max_Packet_Length": 1000.0,
-    "Packet_Length_Mean": 500.0,
-    "Packet_Length_Std": 100.0,
-    "Packet_Length_Variance": 10000.0,
-    "FIN_Flag_Count": 0.0,
-    "SYN_Flag_Count": 1.0,
-    "RST_Flag_Count": 0.0,
-    "PSH_Flag_Count": 0.0,
-    "ACK_Flag_Count": 1.0,
-    "URG_Flag_Count": 0.0,
-    "CWE_Flag_Count": 0.0,
-    "ECE_Flag_Count": 0.0,
+
+    "Destination_Port": 80,
+
+    "Flow_Duration": 1000,
+
+    "Total_Fwd_Packets": 10,
+
+    "Total_Backward_Packets": 8,
+
+    "Total_Length_of_Fwd_Packets": 5000,
+
+    "Total_Length_of_Bwd_Packets": 4000,
+
+    "Fwd_Packet_Length_Max": 1500,
+
+    "Fwd_Packet_Length_Min": 40,
+
+    "Fwd_Packet_Length_Mean": 500,
+
+    "Fwd_Packet_Length_Std": 150,
+
+    "Bwd_Packet_Length_Max": 1400,
+
+    "Bwd_Packet_Length_Min": 40,
+
+    "Bwd_Packet_Length_Mean": 500,
+
+    "Bwd_Packet_Length_Std": 120,
+
+    "Flow_Bytes/s": 9000,
+
+    "Flow_Packets/s": 18,
+
+    "Flow_IAT_Mean": 55,
+
+    "Flow_IAT_Std": 20,
+
+    "Flow_IAT_Max": 120,
+
+    "Flow_IAT_Min": 5,
+
+    "Fwd_IAT_Total": 500,
+
+    "Fwd_IAT_Mean": 55,
+
+    "Fwd_IAT_Std": 20,
+
+    "Fwd_IAT_Max": 100,
+
+    "Fwd_IAT_Min": 5,
+
+    "Bwd_IAT_Total": 450,
+
+    "Bwd_IAT_Mean": 56,
+
+    "Bwd_IAT_Std": 18,
+
+    "Bwd_IAT_Max": 110,
+
+    "Bwd_IAT_Min": 6,
+
+    "Fwd_PSH_Flags": 1,
+
+    "Bwd_PSH_Flags": 1,
+
+    "Fwd_URG_Flags": 0,
+
+    "Bwd_URG_Flags": 0,
+
+    "Fwd_Header_Length": 320,
+
+    "Bwd_Header_Length": 256,
+
+    "Fwd_Packets/s": 10,
+
+    "Bwd_Packets/s": 8,
+
+    "Min_Packet_Length": 40,
+
+    "Max_Packet_Length": 1500,
+
+    "Packet_Length_Mean": 500,
+
+    "Packet_Length_Std": 160,
+
+    "Packet_Length_Variance": 25600,
+
+    "FIN_Flag_Count": 0,
+
+    "SYN_Flag_Count": 1,
+
+    "RST_Flag_Count": 0,
+
+    "PSH_Flag_Count": 2,
+
+    "ACK_Flag_Count": 10,
+
+    "URG_Flag_Count": 0,
+
+    "CWE_Flag_Count": 0,
+
+    "ECE_Flag_Count": 0,
+
     "Down/Up_Ratio": 0.8,
-    "Average_Packet_Size": 500.0,
-    "Avg_Fwd_Segment_Size": 500.0,
-    "Avg_Bwd_Segment_Size": 500.0,
-    "Fwd_Header_Length.1": 200.0,
-    "Fwd_Avg_Bytes/Bulk": 0.0,
-    "Fwd_Avg_Packets/Bulk": 0.0,
-    "Fwd_Avg_Bulk_Rate": 0.0,
-    "Bwd_Avg_Bytes/Bulk": 0.0,
-    "Bwd_Avg_Packets/Bulk": 0.0,
-    "Bwd_Avg_Bulk_Rate": 0.0,
-    "Subflow_Fwd_Packets": 10.0,
-    "Subflow_Fwd_Bytes": 5000.0,
-    "Subflow_Bwd_Packets": 8.0,
-    "Subflow_Bwd_Bytes": 4000.0,
-    "Init_Win_bytes_forward": 65535.0,
-    "Init_Win_bytes_backward": 65535.0,
-    "act_data_pkt_fwd": 10.0,
-    "min_seg_size_forward": 20.0,
-    "Active_Mean": 10000.0,
-    "Active_Std": 1000.0,
-    "Active_Max": 20000.0,
-    "Active_Min": 1000.0,
-    "Idle_Mean": 50000.0,
-    "Idle_Std": 5000.0,
-    "Idle_Max": 60000.0,
-    "Idle_Min": 40000.0
+
+    "Average_Packet_Size": 500,
+
+    "Avg_Fwd_Segment_Size": 500,
+
+    "Avg_Bwd_Segment_Size": 500,
+
+    "Fwd_Header_Length.1": 320,
+
+    "Fwd_Avg_Bytes/Bulk": 0,
+
+    "Fwd_Avg_Packets/Bulk": 0,
+
+    "Fwd_Avg_Bulk_Rate": 0,
+
+    "Bwd_Avg_Bytes/Bulk": 0,
+
+    "Bwd_Avg_Packets/Bulk": 0,
+
+    "Bwd_Avg_Bulk_Rate": 0,
+
+    "Subflow_Fwd_Packets": 10,
+
+    "Subflow_Fwd_Bytes": 5000,
+
+    "Subflow_Bwd_Packets": 8,
+
+    "Subflow_Bwd_Bytes": 4000,
+
+    "Init_Win_bytes_forward": 8192,
+
+    "Init_Win_bytes_backward": 8192,
+
+    "act_data_pkt_fwd": 8,
+
+    "min_seg_size_forward": 20,
+
+    "Active_Mean": 100,
+
+    "Active_Std": 20,
+
+    "Active_Max": 150,
+
+    "Active_Min": 50,
+
+    "Idle_Mean": 1000,
+
+    "Idle_Std": 100,
+
+    "Idle_Max": 1200,
+
+    "Idle_Min": 800
+
 };
 
 
-// ============================================================
-// PAGE LOAD
-// ============================================================
+/* =========================================================
+   VERIFY FEATURE COUNT
+========================================================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
+console.log(
+    "SentinelL402 feature count:",
+    Object.keys(FEATURES).length
+);
 
-    const userElement = document.getElementById("userId");
 
-    if (userElement) {
-        userElement.textContent = USER_ID;
+/* =========================================================
+   API KEY MANAGEMENT
+========================================================= */
+
+function getAPIKey() {
+
+    return localStorage.getItem(
+        API_KEY_STORAGE_KEY
+    );
+}
+
+
+function setAPIKey(apiKey) {
+
+    if (!apiKey) {
+        return;
     }
 
-    await checkAPI();
+    localStorage.setItem(
+        API_KEY_STORAGE_KEY,
+        apiKey.trim()
+    );
+}
 
-    await loadUsage();
-});
+
+function clearAPIKey() {
+
+    localStorage.removeItem(
+        API_KEY_STORAGE_KEY
+    );
+}
 
 
-// ============================================================
-// CHECK FASTAPI
-// ============================================================
+function getAuthHeaders() {
+
+    const apiKey = getAPIKey();
+
+    const headers = {
+        "Content-Type": "application/json"
+    };
+
+    if (apiKey) {
+
+        headers["X-API-Key"] =
+            apiKey;
+    }
+
+    return headers;
+}
+
+
+/* =========================================================
+   DOM READY
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const userIdElement =
+            document.getElementById(
+                "userId"
+            );
+
+        if (userIdElement) {
+
+            userIdElement.textContent =
+                USER_ID;
+        }
+
+
+        const usageUser =
+            document.getElementById(
+                "usageUser"
+            );
+
+        if (usageUser) {
+
+            usageUser.textContent =
+                USER_ID;
+        }
+
+
+        const savedKey =
+            getAPIKey();
+
+        const apiKeyStatus =
+            document.getElementById(
+                "apiKeyStatus"
+            );
+
+        if (savedKey && apiKeyStatus) {
+
+            apiKeyStatus.textContent =
+                "API key configured.";
+        }
+
+
+        checkAPI();
+
+        loadUsage();
+
+        updateDashboard();
+
+
+        setInterval(
+            () => {
+
+                checkAPI();
+
+                loadUsage();
+
+            },
+            15000
+        );
+
+    }
+);
+
+
+/* =========================================================
+   SECTION NAVIGATION
+========================================================= */
+
+function showSection(
+    sectionName
+) {
+
+    const sections =
+        document.querySelectorAll(
+            ".dashboard-section"
+        );
+
+
+    sections.forEach(
+        section => {
+
+            section.classList.remove(
+                "active-section"
+            );
+
+        }
+    );
+
+
+    const selectedSection =
+        document.getElementById(
+            sectionName
+        );
+
+
+    if (selectedSection) {
+
+        selectedSection.classList.add(
+            "active-section"
+        );
+    }
+
+
+    const navItems =
+        document.querySelectorAll(
+            ".nav-item"
+        );
+
+
+    navItems.forEach(
+        item => {
+
+            item.classList.remove(
+                "active"
+            );
+
+            if (
+                item.dataset.section ===
+                sectionName
+            ) {
+
+                item.classList.add(
+                    "active"
+                );
+            }
+
+        }
+    );
+
+
+    const pageTitle =
+        document.getElementById(
+            "pageTitle"
+        );
+
+    const pageSubtitle =
+        document.getElementById(
+            "pageSubtitle"
+        );
+
+
+    const pageInformation = {
+
+        dashboard: [
+            "Dashboard",
+            "SentinelL402 security and AI monitoring console"
+        ],
+
+        security: [
+            "Security Analysis",
+            "Analyze network traffic using the ML security engine"
+        ],
+
+        agent: [
+            "AI Agent",
+            "Intent routing, tool selection and security analysis"
+        ],
+
+        payments: [
+            "Payments",
+            "Bitcoin Lightning payment and credit information"
+        ],
+
+        usage: [
+            "Usage",
+            "Account-level API usage and credit information"
+        ],
+
+        "api-keys": [
+            "API Keys",
+            "Authentication and API access information"
+        ],
+
+        settings: [
+            "Settings",
+            "Configure SentinelL402 frontend authentication"
+        ]
+
+    };
+
+
+    const information =
+        pageInformation[
+            sectionName
+        ];
+
+
+    if (information) {
+
+        pageTitle.textContent =
+            information[0];
+
+        pageSubtitle.textContent =
+            information[1];
+    }
+
+}
+
+
+/* =========================================================
+   API HEALTH
+========================================================= */
 
 async function checkAPI() {
 
-    const statusText =
-        document.getElementById("apiStatus");
-
-    const statusDot =
-        document.getElementById("apiStatusDot");
-
     try {
 
-        const response = await fetch(
-            `${API_BASE}/health`
-        );
+        const response =
+            await fetch(
+                `${API_BASE}/health`,
+                {
+                    method: "GET",
+                    headers: getAuthHeaders()
+                }
+            );
+
 
         if (!response.ok) {
-            throw new Error("API unavailable");
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
         }
 
-        const data = await response.json();
 
-        if (statusText) {
-            statusText.textContent =
-                data.status || "API Online";
+        const data =
+            await response.json();
+
+
+        setAPIStatus(
+            true,
+            data.status || "healthy"
+        );
+
+
+        const dashboardStatus =
+            document.getElementById(
+                "dashboardApiStatus"
+            );
+
+
+        if (dashboardStatus) {
+
+            dashboardStatus.textContent =
+                "Online";
         }
 
-        if (statusDot) {
-            statusDot.style.background = "green";
-        }
+
+        return data;
 
     } catch (error) {
 
-        if (statusText) {
-            statusText.textContent = "API Offline";
-        }
-
-        if (statusDot) {
-            statusDot.style.background = "red";
-        }
-
         console.error(
-            "API connection error:",
+            "API health check failed:",
             error
         );
+
+
+        setAPIStatus(
+            false,
+            "Offline"
+        );
+
+
+        const dashboardStatus =
+            document.getElementById(
+                "dashboardApiStatus"
+            );
+
+
+        if (dashboardStatus) {
+
+            dashboardStatus.textContent =
+                "Offline";
+        }
+
+        return null;
     }
 }
 
 
-// ============================================================
-// LOAD ACCOUNT USAGE
-// ============================================================
+/* =========================================================
+   API STATUS UI
+========================================================= */
+
+function setAPIStatus(
+    online,
+    message
+) {
+
+    const sidebarDot =
+        document.getElementById(
+            "sidebarStatusDot"
+        );
+
+    const sidebarStatus =
+        document.getElementById(
+            "sidebarStatus"
+        );
+
+    const apiDot =
+        document.getElementById(
+            "apiStatusDot"
+        );
+
+    const apiStatus =
+        document.getElementById(
+            "apiStatus"
+        );
+
+
+    if (sidebarDot) {
+
+        sidebarDot.className =
+            `status-dot ${
+                online
+                    ? "online"
+                    : "offline"
+            }`;
+    }
+
+
+    if (apiDot) {
+
+        apiDot.className =
+            `status-dot ${
+                online
+                    ? "online"
+                    : "offline"
+            }`;
+    }
+
+
+    if (sidebarStatus) {
+
+        sidebarStatus.textContent =
+            online
+                ? "API Online"
+                : "API Offline";
+    }
+
+
+    if (apiStatus) {
+
+        apiStatus.textContent =
+            message;
+    }
+
+}
+
+
+/* =========================================================
+   LOAD USAGE
+========================================================= */
 
 async function loadUsage() {
+    const userId = "l402-402-demo-user";
+
+    if (!userId) {
+        console.warn("No user ID configured.");
+        return;
+    }
 
     try {
-
         const response = await fetch(
-            `${API_BASE}/api/usage/${USER_ID}`
+            `${API_BASE}/api/usage/${encodeURIComponent(userId)}`,
+            {
+                method: "GET",
+                headers: getAuthHeaders()
+            }
         );
+
+        if (!response.ok) {
+            console.error(
+                `Usage request failed: ${response.status}`
+            );
+            return;
+        }
 
         const data = await response.json();
 
-        if (!response.ok) {
+        console.log("Usage response:", data);
 
-            const errorMessage =
-                typeof data.detail === "string"
-                    ? data.detail
-                    : "Unable to load usage";
+        // Usage section
+        const usageUser = document.getElementById("usageUser");
+        const usageCredits = document.getElementById("usageCredits");
+        const usageRequests = document.getElementById("usageRequests");
 
-            throw new Error(errorMessage);
+        if (usageUser) {
+            usageUser.textContent = data.user_id ?? userId;
         }
 
-        const creditsElement =
-            document.getElementById("credits");
-
-        const requestsElement =
-            document.getElementById("requests");
-
-        if (creditsElement) {
-            creditsElement.textContent =
-                data.credits_remaining;
+        if (usageCredits) {
+            usageCredits.textContent =
+                data.credits_remaining ?? 0;
         }
 
-        if (requestsElement) {
-            requestsElement.textContent =
-                data.total_requests;
+        if (usageRequests) {
+            usageRequests.textContent =
+                data.total_requests ?? 0;
+        }
+
+        // Dashboard section
+        const dashboardCredits =
+            document.getElementById("dashboardCredits");
+
+        const dashboardRequests =
+            document.getElementById("dashboardRequests");
+
+        if (dashboardCredits) {
+            dashboardCredits.textContent =
+                data.credits_remaining ?? 0;
+        }
+
+        if (dashboardRequests) {
+            dashboardRequests.textContent =
+                data.total_requests ?? 0;
         }
 
     } catch (error) {
-
         console.error(
-            "Usage error:",
+            "Failed to load usage:",
             error
         );
     }
 }
 
 
-// ============================================================
-// SECURITY ANALYSIS
-// ============================================================
+/* =========================================================
+   UPDATE USAGE UI
+========================================================= */
 
-async function analyzeSecurity() {
+function updateUsageUI(
+    data,
+    errorMessage
+) {
 
-    const button =
-        document.getElementById("analyzeButton");
+    if (!data) {
 
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Analyzing...";
-    }
-
-    hideElement("resultCard");
-
-    try {
-
-        const payload = {
-
-            source: USER_ID,
-
-            event_type:
-                document.getElementById("eventType").value,
-
-            severity:
-                document.getElementById("severity").value,
-
-            description:
-                document.getElementById("description").value,
-
-            features: FEATURES
-        };
+        const elements = [
+            "dashboardCredits",
+            "dashboardRequests",
+            "credits",
+            "requests",
+            "usageCredits",
+            "usageRequests"
+        ];
 
 
-        const response = await fetch(
-            `${API_BASE}/api/security/analyze`,
-            {
-                method: "POST",
+        elements.forEach(
+            id => {
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                const element =
+                    document.getElementById(
+                        id
+                    );
 
-                body: JSON.stringify(payload)
+                if (element) {
+
+                    element.textContent =
+                        "--";
+                }
+
             }
         );
 
 
-        const data = await response.json();
-
-
-        // ====================================================
-        // HTTP 402 PAYMENT REQUIRED
-        // ====================================================
-
-        if (response.status === 402) {
-
-            showPaymentRequired(data);
-
-            return;
-        }
-
-
-        if (!response.ok) {
-
-            const errorMessage =
-                typeof data.detail === "string"
-                    ? data.detail
-                    : "Security analysis failed";
-
-            throw new Error(errorMessage);
-        }
-
-
-        showAnalysisResult(data);
-
-        await loadUsage();
-
-    } catch (error) {
-
-        console.error(
-            "Security analysis error:",
-            error
-        );
-
-        alert(
-            "Security analysis error: " +
-            error.message
-        );
-
-    } finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                "🔎 Analyze Network Traffic";
-        }
+        return;
     }
+
+
+    const credits =
+        data.credits ??
+        data.remaining_credits ??
+        data.credit_balance ??
+        0;
+
+
+    const requests =
+        data.requests ??
+        data.total_requests ??
+        data.request_count ??
+        0;
+
+
+    const user =
+        data.user_id ??
+        USER_ID;
+
+
+    setText(
+        "dashboardCredits",
+        credits
+    );
+
+    setText(
+        "dashboardRequests",
+        requests
+    );
+
+    setText(
+        "credits",
+        credits
+    );
+
+    setText(
+        "requests",
+        requests
+    );
+
+    setText(
+        "usageUser",
+        user
+    );
+
+    setText(
+        "usageCredits",
+        credits
+    );
+
+    setText(
+        "usageRequests",
+        requests
+    );
+
 }
 
 
-// ============================================================
-// DISPLAY 402 PAYMENT CHALLENGE
-// ============================================================
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
-function showPaymentRequired(data) {
+function updateDashboard() {
 
-    const detail =
-        data.detail || data;
+    loadUsage();
 
-
-    currentPaymentId =
-        detail.payment_id;
-
-
-    const paymentIdElement =
-        document.getElementById("paymentId");
-
-    const paymentAmountElement =
-        document.getElementById("paymentAmount");
-
-    const invoiceElement =
-        document.getElementById("invoice");
-
-    const paymentMessageElement =
-        document.getElementById("paymentMessage");
-
-
-    if (paymentIdElement) {
-
-        paymentIdElement.textContent =
-            detail.payment_id ?? "-";
-    }
-
-
-    if (paymentAmountElement) {
-
-        paymentAmountElement.textContent =
-            detail.amount_sats !== undefined
-                ? `${detail.amount_sats} sats`
-                : "-";
-    }
-
-
-    if (invoiceElement) {
-
-        invoiceElement.value =
-            detail.invoice ||
-            "Invoice unavailable";
-    }
-
-
-    if (paymentMessageElement) {
-
-        paymentMessageElement.textContent =
-            "Payment required before the AI analysis can continue.";
-    }
-
-
-    showElement("paymentCard");
 }
 
 
-// ============================================================
-// VERIFY PAYMENT
-// ============================================================
+/* =========================================================
+   SECURITY ANALYSIS
+========================================================= */
 
-async function verifyPayment() {
+async function analyzeSecurity() {
 
-    if (!currentPaymentId) {
+    const button =
+        document.getElementById(
+            "analyzeButton"
+        );
 
-        alert(
-            "No payment is currently pending."
+
+    const status =
+        document.getElementById(
+            "securityStatus"
+        );
+
+
+    const eventType =
+        document.getElementById(
+            "eventType"
+        ).value.trim();
+
+
+    const severity =
+        document.getElementById(
+            "severity"
+        ).value;
+
+
+    const description =
+        document.getElementById(
+            "description"
+        ).value.trim();
+
+
+    if (!eventType || !description) {
+
+        setStatus(
+            status,
+            "Please fill in all required fields.",
+            "error"
         );
 
         return;
     }
 
 
-    const message =
-        document.getElementById(
-            "paymentMessage"
-        );
+    button.disabled = true;
+
+    setStatus(
+        status,
+        "Analyzing network traffic...",
+        ""
+    );
 
 
-    if (message) {
+    hideElement(
+        "resultCard"
+    );
 
-        message.textContent =
-            "Checking Lightning payment...";
-    }
+    hideElement(
+        "paymentCard"
+    );
 
-
-    try {
-
-        const response = await fetch(
-            `${API_BASE}/api/payment/verify/${currentPaymentId}`,
-            {
-                method: "POST"
-            }
-        );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            const errorMessage =
-                typeof data.detail === "string"
-                    ? data.detail
-                    : "Payment verification failed";
-
-            throw new Error(errorMessage);
-        }
-
-
-        if (data.status === "paid") {
-
-            if (message) {
-
-                message.textContent =
-                    "✅ Payment verified. Credits added. Retrying analysis...";
-            }
-
-
-            await loadUsage();
-
-
-            // Automatically retry the original
-            // security analysis after payment.
-            await retrySecurityAnalysis();
-
-        } else {
-
-            if (message) {
-
-                message.textContent =
-                    "⏳ Payment is still pending. Pay the invoice and try again.";
-            }
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Payment verification error:",
-            error
-        );
-
-
-        if (message) {
-
-            message.textContent =
-                "Payment verification error: " +
-                error.message;
-        }
-    }
-}
-
-
-// ============================================================
-// RETRY SECURITY ANALYSIS AFTER PAYMENT
-// ============================================================
-
-async function retrySecurityAnalysis() {
 
     const payload = {
 
-        source: USER_ID,
+        source: "CIC-IDS2017",
 
         event_type:
-            document.getElementById("eventType").value,
+            eventType,
 
         severity:
-            document.getElementById("severity").value,
+            severity,
 
         description:
-            document.getElementById("description").value,
+            description,
 
-        features: FEATURES
+        features:
+            FEATURES
+
     };
 
 
     try {
 
-        const response = await fetch(
-            `${API_BASE}/api/security/analyze`,
-            {
-                method: "POST",
+        const response =
+            await fetch(
+                `${API_BASE}/api/security/analyze`,
+                {
+                    method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    headers:
+                        getAuthHeaders(),
 
-                body: JSON.stringify(payload)
-            }
-        );
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+                }
+            );
 
 
         const data =
@@ -519,7 +904,39 @@ async function retrySecurityAnalysis() {
 
         if (response.status === 402) {
 
-            showPaymentRequired(data);
+            showPaymentRequired(
+                data
+            );
+
+            setStatus(
+                status,
+                "Payment required.",
+                "warning"
+            );
+
+            return;
+        }
+
+
+        if (response.status === 401) {
+
+            setStatus(
+                status,
+                "Missing API key. Configure it in Settings.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (response.status === 403) {
+
+            setStatus(
+                status,
+                "Invalid or unauthorized API key.",
+                "error"
+            );
 
             return;
         }
@@ -527,22 +944,23 @@ async function retrySecurityAnalysis() {
 
         if (!response.ok) {
 
-            const errorMessage =
-                typeof data.detail === "string"
-                    ? data.detail
-                    : "Retry analysis failed";
-
-            throw new Error(errorMessage);
+            throw new Error(
+                data.detail ||
+                `HTTP ${response.status}`
+            );
         }
 
 
-        showAnalysisResult(data);
+        showAnalysisResult(
+            data
+        );
 
 
-        hideElement("paymentCard");
-
-
-        currentPaymentId = null;
+        setStatus(
+            status,
+            "Analysis completed successfully.",
+            "success"
+        );
 
 
         await loadUsage();
@@ -551,146 +969,1115 @@ async function retrySecurityAnalysis() {
     } catch (error) {
 
         console.error(
-            "Retry error:",
+            "Security analysis failed:",
             error
         );
 
 
-        const message =
-            document.getElementById(
-                "paymentMessage"
+        setStatus(
+            status,
+            error.message ||
+            "Security analysis failed.",
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+    }
+
+}
+
+
+/* =========================================================
+   SECURITY RESULT
+========================================================= */
+
+function showAnalysisResult(
+    data
+) {
+
+    showElement(
+        "resultCard"
+    );
+
+
+    const result =
+        data.result ||
+        data;
+
+
+    setText(
+        "resultSource",
+        result.source
+    );
+
+    setText(
+        "resultEventType",
+        result.event_type
+    );
+
+    setText(
+        "prediction",
+        result.ml_prediction
+    );
+
+    setText(
+        "mlLabel",
+        result.ml_label
+    );
+
+    setText(
+        "confidence",
+        formatConfidence(
+            result.confidence
+        )
+    );
+
+    setText(
+        "riskLevel",
+        result.risk_level
+    );
+
+    setText(
+        "resultCredits",
+        result.credits_remaining
+    );
+
+    setText(
+        "explanation",
+        result.explanation
+    );
+
+    setText(
+        "recommendation",
+        result.recommendation
+    );
+
+    setText(
+        "llmAnalysis",
+        result.llm_analysis
+    );
+
+
+    updatePaymentInformation(
+        result
+    );
+}
+
+
+/* =========================================================
+   SECURITY 402 PAYMENT
+========================================================= */
+
+function showPaymentRequired(
+    data
+) {
+
+    showElement(
+        "paymentCard"
+    );
+
+
+    const detail =
+        data.detail ||
+        data;
+
+
+    const message =
+        detail.message ||
+        detail.detail ||
+        "Payment required to continue.";
+
+
+    const invoice =
+        detail.invoice ||
+        detail.payment_request ||
+        "";
+
+
+    currentPaymentId =
+        detail.payment_id ||
+        null;
+
+
+    paymentSource =
+        "security";
+
+
+    setText(
+        "paymentMessage",
+        message
+    );
+
+
+    setText(
+        "paymentAmount",
+        detail.amount_sats
+            ? `${detail.amount_sats} sats`
+            : "--"
+    );
+
+
+    setText(
+        "paymentId",
+        currentPaymentId || "--"
+    );
+
+
+    const invoiceElement =
+        document.getElementById(
+            "invoice"
+        );
+
+
+    if (invoiceElement) {
+
+        invoiceElement.value =
+            invoice;
+    }
+
+
+    updatePaymentMessage(
+        message
+    );
+}
+
+
+/* =========================================================
+   VERIFY SECURITY PAYMENT
+========================================================= */
+
+async function verifyPayment() {
+
+    if (!currentPaymentId) {
+
+        updatePaymentMessage(
+            "No payment ID is available."
+        );
+
+        return;
+    }
+
+
+    const button =
+        document.getElementById(
+            "verifyPaymentButton"
+        );
+
+
+    button.disabled = true;
+
+
+    updatePaymentMessage(
+        "Checking Lightning payment..."
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE}/api/payment/verify/${currentPaymentId}`,
+                {
+                    method: "POST",
+                    headers:
+                        getAuthHeaders()
+                }
             );
 
 
-        if (message) {
+        const data =
+            await response.json();
 
-            message.textContent =
-                "Retry failed: " +
-                error.message;
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                `Payment verification failed: HTTP ${response.status}`
+            );
         }
+
+
+        updatePaymentMessage(
+            "Payment verified successfully. Credits restored."
+        );
+
+
+        hideElement(
+            "paymentCard"
+        );
+
+
+        await loadUsage();
+
+
+        setTimeout(
+            () => {
+
+                retrySecurityAnalysis();
+
+            },
+            500
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        updatePaymentMessage(
+            error.message ||
+            "Payment verification failed."
+        );
+
+    } finally {
+
+        button.disabled = false;
     }
 }
 
 
-// ============================================================
-// DISPLAY ANALYSIS RESULT
-// ============================================================
+/* =========================================================
+   RETRY SECURITY ANALYSIS
+========================================================= */
 
-function showAnalysisResult(data) {
+async function retrySecurityAnalysis() {
 
-    const prediction =
-        document.getElementById("prediction");
+    hideElement(
+        "paymentCard"
+    );
 
-    const mlLabel =
-        document.getElementById("mlLabel");
+    await analyzeSecurity();
 
-    const confidence =
-        document.getElementById("confidence");
-
-    const riskLevel =
-        document.getElementById("riskLevel");
-
-    const resultCredits =
-        document.getElementById("resultCredits");
-
-    const explanation =
-        document.getElementById("explanation");
-
-    const recommendation =
-        document.getElementById("recommendation");
-
-
-    if (prediction) {
-
-        prediction.textContent =
-            data.ml_prediction ?? "-";
-    }
-
-
-    if (mlLabel) {
-
-        mlLabel.textContent =
-            data.ml_label ?? "-";
-    }
-
-
-    if (confidence) {
-
-        if (
-            data.confidence !== null &&
-            data.confidence !== undefined
-        ) {
-
-            confidence.textContent =
-                `${(data.confidence * 100).toFixed(2)}%`;
-
-        } else {
-
-            confidence.textContent =
-                "N/A";
-        }
-    }
-
-
-    if (riskLevel) {
-
-        riskLevel.textContent =
-            data.risk_level ?? "-";
-    }
-
-
-    if (resultCredits) {
-
-        resultCredits.textContent =
-            data.credits_remaining ?? "-";
-    }
-
-
-    if (explanation) {
-
-        explanation.textContent =
-            data.explanation ?? "-";
-    }
-
-
-    if (recommendation) {
-
-        recommendation.textContent =
-            data.recommendation ?? "-";
-    }
-
-
-    showElement("resultCard");
 }
 
 
-// ============================================================
-// UI HELPERS
-// ============================================================
+/* =========================================================
+   AGENT
+========================================================= */
 
-function showElement(id) {
+async function runAgent() {
 
-    const element =
-        document.getElementById(id);
+    const button =
+        document.getElementById(
+            "agentRunButton"
+        );
 
-    if (element) {
 
-        element.classList.remove(
-            "hidden"
+    const status =
+        document.getElementById(
+            "agentStatus"
+        );
+
+
+    const intent =
+        document.getElementById(
+            "agentIntent"
+        ).value;
+
+
+    const eventType =
+        document.getElementById(
+            "agentEventType"
+        ).value.trim();
+
+
+    const severity =
+        document.getElementById(
+            "agentSeverity"
+        ).value;
+
+
+    const description =
+        document.getElementById(
+            "agentDescription"
+        ).value.trim();
+
+
+    if (!eventType || !description) {
+
+        setStatus(
+            status,
+            "Please fill in all required fields.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    button.disabled = true;
+
+
+    setStatus(
+        status,
+        "AI Agent is processing the request...",
+        ""
+    );
+
+
+    hideElement(
+        "agentResultCard"
+    );
+
+    hideElement(
+        "agentPaymentCard"
+    );
+
+
+    const payload = {
+
+        user_id:
+            USER_ID,
+
+        intent:
+            intent,
+
+        parameters: {
+
+            source:
+                "CIC-IDS2017",
+
+            event_type:
+                eventType,
+
+            severity:
+                severity,
+
+            description:
+                description,
+
+            features:
+                FEATURES
+
+        }
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE}/api/agent/run`,
+                {
+                    method: "POST",
+
+                    headers:
+                        getAuthHeaders(),
+
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (response.status === 402) {
+
+            showAgentPaymentRequired(
+                data
+            );
+
+            setStatus(
+                status,
+                "Agent requires payment.",
+                "warning"
+            );
+
+            return;
+        }
+
+
+        if (response.status === 401) {
+
+            setStatus(
+                status,
+                "Missing API key. Configure it in Settings.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (response.status === 403) {
+
+            setStatus(
+                status,
+                "Invalid or unauthorized API key.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                `HTTP ${response.status}`
+            );
+        }
+
+
+        showAgentResult(
+            data
+        );
+
+
+        setStatus(
+            status,
+            "Agent completed successfully.",
+            "success"
+        );
+
+
+        await loadUsage();
+
+
+    } catch (error) {
+
+        console.error(
+            "Agent request failed:",
+            error
+        );
+
+
+        setStatus(
+            status,
+            error.message ||
+            "Agent request failed.",
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+    }
+
+}
+
+
+/* =========================================================
+   AGENT RESULT
+========================================================= */
+
+function showAgentResult(
+    data
+) {
+
+    showElement(
+        "agentResultCard"
+    );
+
+
+    const result =
+        data.result ||
+        data;
+
+
+    setText(
+        "agentAction",
+        data.action ||
+        result.action
+    );
+
+
+    setText(
+        "agentTool",
+        data.tool ||
+        result.tool
+    );
+
+
+    setText(
+        "agentResultSource",
+        result.source
+    );
+
+
+    setText(
+        "agentResultEventType",
+        result.event_type
+    );
+
+
+    setText(
+        "agentPrediction",
+        result.ml_prediction
+    );
+
+
+    setText(
+        "agentMLLabel",
+        result.ml_label
+    );
+
+
+    setText(
+        "agentConfidence",
+        formatConfidence(
+            result.confidence
+        )
+    );
+
+
+    setText(
+        "agentRiskLevel",
+        result.risk_level
+    );
+
+
+    setText(
+        "agentCredits",
+        result.credits_remaining
+    );
+
+
+    setText(
+        "agentExplanation",
+        result.explanation
+    );
+
+
+    setText(
+        "agentRecommendation",
+        result.recommendation
+    );
+
+
+    setText(
+        "agentLLMAnalysis",
+        result.llm_analysis
+    );
+
+
+    setText(
+        "agentUserId",
+        USER_ID
+    );
+
+
+    setText(
+        "agentFeatureCount",
+        Object.keys(
+            FEATURES
+        ).length
+    );
+
+
+    updatePaymentInformation(
+        result
+    );
+}
+
+
+/* =========================================================
+   AGENT PAYMENT
+========================================================= */
+
+function showAgentPaymentRequired(
+    data
+) {
+
+    showElement(
+        "agentPaymentCard"
+    );
+
+
+    const detail =
+        data.detail ||
+        data;
+
+
+    const message =
+        detail.message ||
+        detail.detail ||
+        "Payment required to continue.";
+
+
+    const invoice =
+        detail.invoice ||
+        detail.payment_request ||
+        "";
+
+
+    currentPaymentId =
+        detail.payment_id ||
+        null;
+
+
+    paymentSource =
+        "agent";
+
+
+    setText(
+        "agentPaymentMessage",
+        message
+    );
+
+
+    const invoiceElement =
+        document.getElementById(
+            "agentInvoice"
+        );
+
+
+    if (invoiceElement) {
+
+        invoiceElement.value =
+            invoice;
+    }
+
+
+    setText(
+        "paymentId",
+        currentPaymentId || "--"
+    );
+
+
+    setText(
+        "paymentAmount",
+        detail.amount_sats
+            ? `${detail.amount_sats} sats`
+            : "--"
+    );
+
+
+    updatePaymentMessage(
+        message
+    );
+}
+
+
+/* =========================================================
+   VERIFY AGENT PAYMENT
+========================================================= */
+
+async function verifyAgentPayment() {
+
+    if (!currentPaymentId) {
+
+        setStatus(
+            document.getElementById(
+                "agentStatus"
+            ),
+            "No payment ID is available.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE}/api/payment/verify/${currentPaymentId}`,
+                {
+                    method: "POST",
+                    headers:
+                        getAuthHeaders()
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                `Payment verification failed: HTTP ${response.status}`
+            );
+        }
+
+
+        hideElement(
+            "agentPaymentCard"
+        );
+
+
+        await loadUsage();
+
+
+        setTimeout(
+            () => {
+
+                retryAgent();
+
+            },
+            500
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+
+        setStatus(
+            document.getElementById(
+                "agentStatus"
+            ),
+            error.message ||
+            "Payment verification failed.",
+            "error"
         );
     }
 }
 
 
-function hideElement(id) {
+/* =========================================================
+   RETRY AGENT
+========================================================= */
+
+async function retryAgent() {
+
+    hideElement(
+        "agentPaymentCard"
+    );
+
+    await runAgent();
+
+}
+
+
+/* =========================================================
+   PAYMENT INFORMATION
+========================================================= */
+
+function updatePaymentInformation(
+    result
+) {
+
+    if (!result) {
+        return;
+    }
+
+
+    if (
+        result.payment_id
+    ) {
+
+        currentPaymentId =
+            result.payment_id;
+
+        setText(
+            "paymentId",
+            result.payment_id
+        );
+    }
+
+
+    if (
+        result.amount_sats
+    ) {
+
+        setText(
+            "paymentAmount",
+            `${result.amount_sats} sats`
+        );
+    }
+}
+
+
+/* =========================================================
+   PAYMENT MESSAGE
+========================================================= */
+
+function updatePaymentMessage(
+    message
+) {
 
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            "paymentMessage"
+        );
+
 
     if (element) {
+
+        element.textContent =
+            message;
+    }
+}
+
+
+/* =========================================================
+   API KEY SAVE
+========================================================= */
+
+function saveAPIKey() {
+
+    const input =
+        document.getElementById(
+            "apiKeyInput"
+        );
+
+
+    const status =
+        document.getElementById(
+            "apiKeyStatus"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    const apiKey =
+        input.value.trim();
+
+
+    if (!apiKey) {
+
+        setStatus(
+            status,
+            "Enter an API key.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        !apiKey.startsWith(
+            "sk_sentinel_"
+        )
+    ) {
+
+        setStatus(
+            status,
+            "The API key should start with sk_sentinel_.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    setAPIKey(
+        apiKey
+    );
+
+
+    input.value = "";
+
+
+    setStatus(
+        status,
+        "API key saved.",
+        "success"
+    );
+
+
+    checkAPI();
+
+    loadUsage();
+
+}
+
+
+/* =========================================================
+   REMOVE API KEY
+========================================================= */
+
+function removeAPIKey() {
+
+    clearAPIKey();
+
+
+    const status =
+        document.getElementById(
+            "apiKeyStatus"
+        );
+
+
+    setStatus(
+        status,
+        "API key removed.",
+        "warning"
+    );
+
+
+    loadUsage();
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (!element) {
+        return;
+    }
+
+
+    if (
+        value === undefined ||
+        value === null
+    ) {
+
+        element.textContent =
+            "--";
+
+        return;
+    }
+
+
+    element.textContent =
+        String(value);
+}
+
+
+function setStatus(
+    element,
+    message,
+    type
+) {
+
+    if (!element) {
+        return;
+    }
+
+
+    element.textContent =
+        message;
+
+
+    element.className =
+        "status-text";
+
+
+    if (type) {
 
         element.classList.add(
-            "hidden"
+            type
         );
     }
 }
+
+
+function showElement(
+    id
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (element) {
+
+        element.style.display =
+            "block";
+    }
+}
+
+
+function hideElement(
+    id
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if (element) {
+
+        element.style.display =
+            "none";
+    }
+}
+
+
+function formatConfidence(
+    value
+) {
+
+    if (
+        value === undefined ||
+        value === null
+    ) {
+
+        return "--";
+    }
+
+
+    const number =
+        Number(value);
+
+
+    if (
+        Number.isNaN(number)
+    ) {
+
+        return String(value);
+    }
+
+
+    return `${(
+        number * 100
+    ).toFixed(2)}%`;
+}
+
+
+/* =========================================================
+   DEBUG INFORMATION
+========================================================= */
+
+console.log(
+    "SentinelL402 frontend loaded."
+);
+
+console.log(
+    "API:",
+    API_BASE
+);
+
+console.log(
+    "User:",
+    USER_ID
+);
+
+console.log(
+    "Features:",
+    Object.keys(
+        FEATURES
+    ).length
+);

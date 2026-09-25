@@ -1,4 +1,5 @@
 from typing import Any, cast
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.logging_config import configure_logging
 
@@ -93,6 +94,16 @@ app = FastAPI(
     title="SentinelL402 API",
     version="0.2.0",
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/ready")
 def readiness_check(db: Session = Depends(get_db)):
     if not check_database(db):
@@ -122,7 +133,12 @@ app.middleware("http")(request_logging_middleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

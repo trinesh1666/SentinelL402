@@ -2,258 +2,1413 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SentinelL402 Security Dashboard</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <title>SentinelL402 | Security Console</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
 
 <body>
 
-    <header class="header">
-        <div>
-            <h1>🛡️ SentinelL402</h1>
-            <p>Metered AI Security Gateway</p>
-        </div>
+<div class="app-shell">
 
-        <div class="status">
-            <span id="apiStatusDot"></span>
-            <span id="apiStatus">Checking API...</span>
-        </div>
-    </header>
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
 
+    <aside class="sidebar">
 
-    <main class="container">
+        <div class="brand">
 
-        <!-- USER / CREDIT INFORMATION -->
-
-        <section class="card">
-
-            <h2>Account</h2>
-
-            <div class="account-grid">
-
-                <div>
-                    <span class="label">User ID</span>
-                    <strong id="userId">Loading...</strong>
-                </div>
-
-                <div>
-                    <span class="label">Credits Remaining</span>
-                    <strong id="credits">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Total Requests</span>
-                    <strong id="requests">-</strong>
-                </div>
-
+            <div class="brand-mark">
+                S
             </div>
 
-        </section>
+            <div>
+                <div class="brand-name">
+                    SentinelL402
+                </div>
+
+                <div class="brand-subtitle">
+                    Security Console
+                </div>
+            </div>
+
+        </div>
 
 
-        <!-- SECURITY ANALYSIS -->
+        <nav class="sidebar-nav">
 
-        <section class="card">
-
-            <h2>🔍 Network Security Analysis</h2>
-
-            <p class="description">
-                Submit network-flow information to the SentinelL402
-                AI security pipeline.
-            </p>
-
-            <label for="eventType">Event Type</label>
-
-            <input
-                id="eventType"
-                type="text"
-                value="network_flow"
+            <button
+                class="nav-item active"
+                data-section="dashboard"
+                onclick="showSection('dashboard')"
             >
-
-
-            <label for="severity">Severity</label>
-
-            <select id="severity">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high" selected>High</option>
-                <option value="critical">Critical</option>
-            </select>
-
-
-            <label for="description">Description</label>
-
-            <textarea id="description">Testing SentinelL402 agent with ML security analysis</textarea>
-
-
-            <button id="analyzeButton" onclick="analyzeSecurity()">
-                🔎 Analyze Network Traffic
+                <span class="nav-icon">▦</span>
+                <span>Dashboard</span>
             </button>
-
-        </section>
-
-
-        <!-- PAYMENT -->
-
-        <section
-            id="paymentCard"
-            class="card payment-card hidden"
-        >
-
-            <h2>⚡ Payment Required</h2>
-
-            <p>
-                Your AI credits are exhausted.
-                Pay the Lightning invoice to continue.
-            </p>
-
-            <div class="payment-info">
-
-                <div>
-                    <span class="label">Payment ID</span>
-                    <strong id="paymentId">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Amount</span>
-                    <strong id="paymentAmount">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Credits Added</span>
-                    <strong>5</strong>
-                </div>
-
-            </div>
-
-
-            <label>Lightning Invoice</label>
-
-            <textarea
-                id="invoice"
-                readonly
-            ></textarea>
 
 
             <button
-                onclick="verifyPayment()"
-                class="payment-button"
+                class="nav-item"
+                data-section="security"
+                onclick="showSection('security')"
             >
-                ⚡ Verify Payment
+                <span class="nav-icon">◈</span>
+                <span>Security Analysis</span>
             </button>
 
-            <p id="paymentMessage"></p>
 
-        </section>
+            <button
+                class="nav-item"
+                data-section="agent"
+                onclick="showSection('agent')"
+            >
+                <span class="nav-icon">✦</span>
+                <span>AI Agent</span>
+            </button>
 
 
-        <!-- RESULT -->
+            <button
+                class="nav-item"
+                data-section="payments"
+                onclick="showSection('payments')"
+            >
+                <span class="nav-icon">₿</span>
+                <span>Payments</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="usage"
+                onclick="showSection('usage')"
+            >
+                <span class="nav-icon">▤</span>
+                <span>Usage</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="api-keys"
+                onclick="showSection('api-keys')"
+            >
+                <span class="nav-icon">🔑</span>
+                <span>API Keys</span>
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="settings"
+                onclick="showSection('settings')"
+            >
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="connection-status">
+
+                <span
+                    id="sidebarStatusDot"
+                    class="status-dot offline"
+                ></span>
+
+                <span id="sidebarStatus">
+                    Checking API...
+                </span>
+
+            </div>
+
+            <div class="sidebar-version">
+                SentinelL402 v1.0.0
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN AREA
+    ========================================================== -->
+
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1 id="pageTitle">
+                    Dashboard
+                </h1>
+
+                <p id="pageSubtitle">
+                    SentinelL402 security and AI monitoring console
+                </p>
+
+            </div>
+
+
+            <div class="topbar-status">
+
+                <span
+                    id="apiStatusDot"
+                    class="status-dot offline"
+                ></span>
+
+                <span id="apiStatus">
+                    API checking...
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             DASHBOARD
+        ====================================================== -->
 
         <section
-            id="resultCard"
-            class="card hidden"
+            id="dashboard"
+            class="dashboard-section active-section"
         >
 
-            <h2>📊 Security Analysis Result</h2>
-
-            <div class="result-grid">
+            <div class="section-heading">
 
                 <div>
-                    <span class="label">ML Prediction</span>
-                    <strong id="prediction">-</strong>
-                </div>
+                    <h2>System Overview</h2>
 
-                <div>
-                    <span class="label">ML Label</span>
-                    <strong id="mlLabel">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Confidence</span>
-                    <strong id="confidence">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Risk Level</span>
-                    <strong id="riskLevel">-</strong>
-                </div>
-
-                <div>
-                    <span class="label">Credits Remaining</span>
-                    <strong id="resultCredits">-</strong>
+                    <p>
+                        Monitor your SentinelL402 API, credits,
+                        requests and security services.
+                    </p>
                 </div>
 
             </div>
 
 
-            <div class="result-text">
+            <div class="stats-grid">
 
-                <h3>Explanation</h3>
-                <p id="explanation">-</p>
+                <div class="stat-card">
 
-                <h3>Recommendation</h3>
-                <p id="recommendation">-</p>
+                    <div class="stat-label">
+                        Available Credits
+                    </div>
+
+                    <div
+                        id="dashboardCredits"
+                        class="stat-value"
+                    >
+                        --
+                    </div>
+
+                    <div class="stat-description">
+                        API credits remaining
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        Requests
+                    </div>
+
+                    <div
+                        id="dashboardRequests"
+                        class="stat-value"
+                    >
+                        --
+                    </div>
+
+                    <div class="stat-description">
+                        Requests processed
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        API Status
+                    </div>
+
+                    <div
+                        id="dashboardApiStatus"
+                        class="stat-value status-value"
+                    >
+                        Checking
+                    </div>
+
+                    <div class="stat-description">
+                        Backend availability
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-grid">
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Account</h3>
+
+                            <p>
+                                Current authenticated account.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-list">
+
+                        <div class="info-row">
+
+                            <span>User ID</span>
+
+                            <strong id="userId">
+                                l402-402-demo-user
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>Credits</span>
+
+                            <strong id="credits">
+                                --
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>Requests</span>
+
+                            <strong id="requests">
+                                --
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <h3>Quick Actions</h3>
+
+                            <p>
+                                Access the main SentinelL402 tools.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="quick-actions">
+
+                        <button
+                            class="primary-button"
+                            onclick="showSection('security')"
+                        >
+                            Security Analysis
+                        </button>
+
+
+                        <button
+                            class="secondary-button"
+                            onclick="showSection('agent')"
+                        >
+                            Run AI Agent
+                        </button>
+
+
+                        <button
+                            class="secondary-button"
+                            onclick="showSection('settings')"
+                        >
+                            Configure API Key
+                        </button>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- SYSTEM FLOW -->
+        <!-- =====================================================
+             SECURITY ANALYSIS
+        ====================================================== -->
 
-        <section class="card">
+        <section
+            id="security"
+            class="dashboard-section"
+        >
 
-            <h2>🔄 SentinelL402 Flow</h2>
+            <div class="section-heading">
 
-            <div class="flow">
+                <div>
+                    <h2>Security Analysis</h2>
 
-                <div class="flow-step">
-                    Client
+                    <p>
+                        Analyze network traffic using the
+                        SentinelL402 ML security engine.
+                    </p>
                 </div>
 
-                <span>→</span>
+            </div>
 
-                <div class="flow-step">
-                    FastAPI
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Network Security Request</h3>
+
+                        <p>
+                            The frontend sends a complete
+                            78-feature CIC-IDS2017 request.
+                        </p>
+                    </div>
+
                 </div>
 
-                <span>→</span>
 
-                <div class="flow-step">
-                    AI Agent
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="eventType">
+                            Event Type
+                        </label>
+
+                        <input
+                            id="eventType"
+                            type="text"
+                            value="network_traffic"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="severity">
+                            Severity
+                        </label>
+
+                        <select id="severity">
+
+                            <option value="low">
+                                Low
+                            </option>
+
+                            <option value="medium" selected>
+                                Medium
+                            </option>
+
+                            <option value="high">
+                                High
+                            </option>
+
+                            <option value="critical">
+                                Critical
+                            </option>
+
+                        </select>
+
+                    </div>
+
                 </div>
 
-                <span>→</span>
 
-                <div class="flow-step">
-                    ML Detector
+                <div class="form-group">
+
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        rows="4"
+                    >Network traffic security analysis requested from CIC-IDS2017 data.</textarea>
+
                 </div>
 
-                <span>→</span>
 
-                <div class="flow-step">
-                    Metering
+                <div class="feature-summary">
+
+                    <span class="feature-badge">
+                        78 ML Features
+                    </span>
+
+                    <span class="feature-badge">
+                        CIC-IDS2017
+                    </span>
+
+                    <span class="feature-badge">
+                        Random Forest
+                    </span>
+
                 </div>
 
-                <span>→</span>
 
-                <div class="flow-step">
-                    HTTP 402
+                <div class="form-actions">
+
+                    <button
+                        id="analyzeButton"
+                        class="primary-button"
+                        onclick="analyzeSecurity()"
+                    >
+                        Analyze Security
+                    </button>
+
+                    <span
+                        id="securityStatus"
+                        class="status-text"
+                    ></span>
+
                 </div>
 
-                <span>→</span>
+            </div>
 
-                <div class="flow-step">
-                    Lightning
+
+            <div
+                id="paymentCard"
+                class="card payment-required"
+                style="display:none;"
+            >
+
+                <div class="payment-alert">
+
+                    <div class="payment-icon">
+                        ₿
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Payment Required
+                        </h3>
+
+                        <p id="paymentMessage">
+                            Additional credits are required.
+                        </p>
+
+                    </div>
+
                 </div>
 
-                <span>→</span>
 
-                <div class="flow-step">
-                    Retry
+                <div class="invoice-box">
+
+                    <div class="invoice-label">
+                        Lightning Invoice
+                    </div>
+
+                    <textarea
+                        id="invoice"
+                        readonly
+                        rows="5"
+                    ></textarea>
+
+                </div>
+
+
+                <div class="payment-actions">
+
+                    <button
+                        id="verifyPaymentButton"
+                        class="primary-button"
+                        onclick="verifyPayment()"
+                    >
+                        Verify Payment
+                    </button>
+
+                    <button
+                        class="secondary-button"
+                        onclick="retrySecurityAnalysis()"
+                    >
+                        Retry Analysis
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="resultCard"
+                class="card result-card"
+                style="display:none;"
+            >
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Analysis Result</h3>
+
+                        <p>
+                            ML classification and LLM explanation.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="result-grid">
+
+                    <div class="result-item">
+                        <span>Source</span>
+                        <strong id="resultSource">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Event Type</span>
+                        <strong id="resultEventType">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Prediction</span>
+                        <strong id="prediction">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>ML Label</span>
+                        <strong id="mlLabel">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Confidence</span>
+                        <strong id="confidence">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Risk Level</span>
+                        <strong id="riskLevel">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Credits Remaining</span>
+                        <strong id="resultCredits">--</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>Explanation</h4>
+
+                    <p id="explanation">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>Recommendation</h4>
+
+                    <p id="recommendation">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>LLM Analysis</h4>
+
+                    <div
+                        id="llmAnalysis"
+                        class="llm-output"
+                    >
+                        --
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             AI AGENT
+        ====================================================== -->
+
+        <section
+            id="agent"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>AI Agent</h2>
+
+                    <p>
+                        Use the SentinelL402 agent to classify
+                        intent, select tools and execute security analysis.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Agent Request</h3>
+
+                        <p>
+                            The authenticated API identity is used
+                            by the backend for usage and payment tracking.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="agentIntent">
+                            Intent
+                        </label>
+
+                        <select id="agentIntent">
+
+                            <option value="security">
+                                Security
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="agentEventType">
+                            Event Type
+                        </label>
+
+                        <input
+                            id="agentEventType"
+                            type="text"
+                            value="network_traffic"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="agentSeverity">
+                        Severity
+                    </label>
+
+                    <select id="agentSeverity">
+
+                        <option value="low">
+                            Low
+                        </option>
+
+                        <option value="medium" selected>
+                            Medium
+                        </option>
+
+                        <option value="high">
+                            High
+                        </option>
+
+                        <option value="critical">
+                            Critical
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="agentDescription">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="agentDescription"
+                        rows="4"
+                    >Analyze this network traffic for possible security threats.</textarea>
+
+                </div>
+
+
+                <div class="feature-summary">
+
+                    <span class="feature-badge">
+                        Agent
+                    </span>
+
+                    <span class="feature-badge">
+                        Tool Routing
+                    </span>
+
+                    <span class="feature-badge">
+                        78 Features
+                    </span>
+
+                    <span class="feature-badge">
+                        LLM
+                    </span>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        id="agentRunButton"
+                        class="primary-button"
+                        onclick="runAgent()"
+                    >
+                        Run AI Agent
+                    </button>
+
+                    <span
+                        id="agentStatus"
+                        class="status-text"
+                    ></span>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="agentPaymentCard"
+                class="card payment-required"
+                style="display:none;"
+            >
+
+                <div class="payment-alert">
+
+                    <div class="payment-icon">
+                        ₿
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Agent Payment Required
+                        </h3>
+
+                        <p id="agentPaymentMessage">
+                            Additional credits are required.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="invoice-box">
+
+                    <div class="invoice-label">
+                        Lightning Invoice
+                    </div>
+
+                    <textarea
+                        id="agentInvoice"
+                        readonly
+                        rows="5"
+                    ></textarea>
+
+                </div>
+
+
+                <div class="payment-actions">
+
+                    <button
+                        class="primary-button"
+                        onclick="verifyAgentPayment()"
+                    >
+                        Verify Payment
+                    </button>
+
+                    <button
+                        class="secondary-button"
+                        onclick="retryAgent()"
+                    >
+                        Retry Agent
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="agentResultCard"
+                class="card result-card"
+                style="display:none;"
+            >
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Agent Result</h3>
+
+                        <p>
+                            Agent routing and security analysis result.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="result-grid">
+
+                    <div class="result-item">
+                        <span>Action</span>
+                        <strong id="agentAction">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Tool</span>
+                        <strong id="agentTool">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Source</span>
+                        <strong id="agentResultSource">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Event Type</span>
+                        <strong id="agentResultEventType">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Prediction</span>
+                        <strong id="agentPrediction">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>ML Label</span>
+                        <strong id="agentMLLabel">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Confidence</span>
+                        <strong id="agentConfidence">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Risk Level</span>
+                        <strong id="agentRiskLevel">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Credits</span>
+                        <strong id="agentCredits">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>User ID</span>
+                        <strong id="agentUserId">--</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Feature Count</span>
+                        <strong id="agentFeatureCount">--</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>Explanation</h4>
+
+                    <p id="agentExplanation">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>Recommendation</h4>
+
+                    <p id="agentRecommendation">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="result-section">
+
+                    <h4>LLM Analysis</h4>
+
+                    <div
+                        id="agentLLMAnalysis"
+                        class="llm-output"
+                    >
+                        --
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             PAYMENTS
+        ====================================================== -->
+
+        <section
+            id="payments"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>Payments</h2>
+
+                    <p>
+                        Bitcoin Lightning payments used to restore
+                        SentinelL402 API credits.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Latest Payment</h3>
+
+                        <p>
+                            Payment information from the current
+                            metered request.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+                    <div class="info-row">
+
+                        <span>Payment ID</span>
+
+                        <strong id="paymentId">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>Amount</span>
+
+                        <strong id="paymentAmount">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="paymentMessage"
+                    class="payment-message"
+                >
+                    No payment required.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             USAGE
+        ====================================================== -->
+
+        <section
+            id="usage"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>Usage</h2>
+
+                    <p>
+                        Current account-level API usage.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="usage-grid">
+
+                    <div class="usage-item">
+
+                        <span>
+                            User
+                        </span>
+
+                        <strong id="usageUser">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="usage-item">
+
+                        <span>
+                            Credits
+                        </span>
+
+                        <strong id="usageCredits">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="usage-item">
+
+                        <span>
+                            Requests
+                        </span>
+
+                        <strong id="usageRequests">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             API KEYS
+        ====================================================== -->
+
+        <section
+            id="api-keys"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>API Keys</h2>
+
+                    <p>
+                        Authentication information for SentinelL402.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>X-API-Key Authentication</h3>
+
+                        <p>
+                            SentinelL402 protects authenticated API
+                            endpoints using the X-API-Key header.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="api-key-information">
+
+                    <div class="information-box">
+
+                        <strong>
+                            Header
+                        </strong>
+
+                        <code>
+                            X-API-Key
+                        </code>
+
+                    </div>
+
+
+                    <div class="information-box">
+
+                        <strong>
+                            Key Prefix
+                        </strong>
+
+                        <code>
+                            sk_sentinel_
+                        </code>
+
+                    </div>
+
+
+                    <div class="information-box">
+
+                        <strong>
+                            Storage
+                        </strong>
+
+                        <span>
+                            Browser localStorage
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="warning-box">
+
+                    <strong>
+                        Security Notice
+                    </strong>
+
+                    <p>
+                        Never paste your real API key into chat,
+                        GitHub, screenshots or public source code.
+                        This browser storage approach is suitable
+                        for this local student/demo frontend.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             SETTINGS
+        ====================================================== -->
+
+        <section
+            id="settings"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>Settings</h2>
+
+                    <p>
+                        Configure the SentinelL402 frontend.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>API Authentication</h3>
+
+                        <p>
+                            Enter the API key generated by your
+                            SentinelL402 backend.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="apiKeyInput">
+                        X-API-Key
+                    </label>
+
+                    <input
+                        id="apiKeyInput"
+                        type="password"
+                        placeholder="sk_sentinel_..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button
+                        class="primary-button"
+                        onclick="saveAPIKey()"
+                    >
+                        Save API Key
+                    </button>
+
+
+                    <button
+                        class="secondary-button"
+                        onclick="removeAPIKey()"
+                    >
+                        Remove API Key
+                    </button>
+
+
+                    <span
+                        id="apiKeyStatus"
+                        class="status-text"
+                    >
+                        Not configured
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h3>Frontend Configuration</h3>
+
+                        <p>
+                            Current development configuration.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+                    <div class="info-row">
+
+                        <span>Backend</span>
+
+                        <strong>
+                            http://127.0.0.1:8000
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>Frontend</span>
+
+                        <strong>
+                            http://localhost:3000
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>Model Dataset</span>
+
+                        <strong>
+                            CIC-IDS2017
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>LLM</span>
+
+                        <strong>
+                            Ollama
+                        </strong>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -262,17 +1417,10 @@
 
     </main>
 
-
-    <footer>
-
-        <p>
-            SentinelL402 — Metered AI Agent
-        </p>
-
-    </footer>
+</div>
 
 
-    <script src="app.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>

@@ -3,9 +3,11 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import (
     Column,
     DateTime,
+    Float,
+    ForeignKey,
     Integer,
     String,
-    ForeignKey,
+    Text,
 )
 
 from sqlalchemy.orm import relationship
@@ -48,6 +50,11 @@ class User(Base):
 
     api_keys = relationship(
         "APIKey",
+        back_populates="user",
+    )
+
+    security_analyses = relationship(
+        "SecurityAnalysis",
         back_populates="user",
     )
 
@@ -206,3 +213,83 @@ class Payment(Base):
     nullable=True,
     )
     description = Column(String, nullable=True)
+
+class SecurityAnalysis(Base):
+    __tablename__ = "security_analyses"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    source = Column(
+        String,
+        nullable=False,
+    )
+
+    event_type = Column(
+        String,
+        nullable=False,
+    )
+
+    severity = Column(
+        String,
+        nullable=False,
+    )
+
+    description = Column(
+        Text,
+        nullable=False,
+    )
+
+    ml_prediction = Column(
+        Integer,
+        nullable=False,
+    )
+
+    ml_label = Column(
+        String,
+        nullable=False,
+    )
+
+    confidence = Column(
+        Float,
+        nullable=True,
+    )
+
+    risk_level = Column(
+        String,
+        nullable=False,
+    )
+
+    explanation = Column(
+        Text,
+        nullable=False,
+    )
+
+    recommendation = Column(
+        Text,
+        nullable=False,
+    )
+
+    llm_analysis = Column(
+        Text,
+        nullable=True,
+    )
+
+    created_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    user = relationship(
+        "User",
+        back_populates="security_analyses",
+    )

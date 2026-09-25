@@ -1,7 +1,7 @@
 from app.database import SessionLocal
 from app.services.api_key_service import create_api_key
 
-USER_ID = "string"
+USER_ID = "l402-402-demo-user"
 KEY_NAME = "sentinell402-development-key"
 
 
