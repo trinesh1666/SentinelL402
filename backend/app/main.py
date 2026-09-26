@@ -1,6 +1,11 @@
 from typing import Any, cast
 
-from app.config import LIGHTNING_PROVIDER
+from app.config import (
+    CORS_ORIGINS,
+    LIGHTNING_PROVIDER,
+    validate_lightning_configuration,
+)
+
 from app.services.mock_lightning_service import mark_mock_payment_paid
 
 from app.services.metering_service import get_usage
@@ -93,16 +98,17 @@ from app.schemas.payment import (
 # FASTAPI APPLICATION
 # ============================================================
 configure_logging()
+
+validate_lightning_configuration()
+
 app = FastAPI(
     title="SentinelL402 API",
     version="0.2.0",
 )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -133,19 +139,6 @@ app.middleware("http")(request_logging_middleware)
 # ============================================================
 # CORS
 # ============================================================
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # ============================================================
 # ROOT ENDPOINT

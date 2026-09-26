@@ -43,10 +43,13 @@ CORS_ORIGINS = [
     if origin.strip()
 ]
 
+
 LIGHTNING_PROVIDER = os.getenv(
     "LIGHTNING_PROVIDER",
     "nwc",
 ).strip().lower()
+
+
 def require_setting(
     value: str | None,
     name: str,
@@ -58,3 +61,31 @@ def require_setting(
         )
 
     return value
+
+
+def validate_lightning_configuration() -> None:
+    """
+    Validate Lightning configuration based on
+    the application environment.
+    """
+
+    if LIGHTNING_PROVIDER not in {
+        "mock",
+        "nwc",
+    }:
+        raise RuntimeError(
+            "LIGHTNING_PROVIDER must be either "
+            "'mock' or 'nwc'."
+        )
+
+    if APP_ENV == "production":
+        if LIGHTNING_PROVIDER != "nwc":
+            raise RuntimeError(
+                "Mock Lightning provider is not allowed "
+                "in production."
+            )
+
+        require_setting(
+            NWC_CONNECTION_STRING,
+            "NWC_CONNECTION_STRING",
+        )
