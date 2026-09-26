@@ -53,6 +53,7 @@ def test_lightning_service_error_returns_503():
 
     assert "LightningServiceError" not in response.text
 
+
 def test_create_invoice_converts_nwc_failure(
     monkeypatch,
 ):
@@ -81,6 +82,12 @@ def test_create_invoice_converts_nwc_failure(
         FailingNWCClient,
     )
 
+    monkeypatch.setattr(
+        lightning_service,
+        "LIGHTNING_PROVIDER",
+        "nwc",
+    )
+
     try:
         lightning_service.create_lightning_invoice(
             10,
@@ -93,6 +100,4 @@ def test_create_invoice_converts_nwc_failure(
         )
 
     except lightning_service.LightningServiceError as exc:
-        assert str(exc) == (
-            "Lightning invoice creation failed."
-        )
+        assert str(exc) == "Lightning invoice creation failed."

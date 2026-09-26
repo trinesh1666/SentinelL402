@@ -1,5 +1,8 @@
 from typing import Any, cast
 
+from app.config import LIGHTNING_PROVIDER
+from app.services.mock_lightning_service import mark_mock_payment_paid
+
 from app.services.metering_service import get_usage
 from app.logging_config import configure_logging
 from app.middleware.request_logging import request_logging_middleware
@@ -481,6 +484,76 @@ def create_payment_endpoint(
         "credits_to_add": 5,
     }
 
+@app.post("/api/payment/mock/complete/{payment_id}")
+def complete_mock_payment(
+    payment_id: int,
+    authenticated_user_id: str = Security(
+        get_authenticated_user
+    ),
+    db: Session = Depends(get_db),
+):
+    if LIGHTNING_PROVIDER != "mock":
+        raise HTTPException(
+            status_code=404,
+            detail="Mock payment endpoint is disabled.",
+        )
+
+    payment_record = (
+        db.query(models.Payment)
+        .filter(models.Payment.id == payment_id)
+        .first()
+    )
+
+    if not payment_record:
+        raise HTTPException(
+            status_code=404,
+            detail="Payment not found.",
+        )
+
+    payment_owner = (
+        db.query(models.User)
+        .filter(
+            models.User.id == payment_record.user_id
+        )
+        .first()
+    )
+
+    if not payment_owner:
+        raise HTTPException(
+            status_code=404,
+            detail="Payment owner not found.",
+        )
+
+    if payment_owner.user_id != authenticated_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not authorized to complete this payment.",
+        )
+
+    if not payment_record.payment_hash:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment does not have a payment hash.",
+        )
+
+    try:
+        mock_payment = mark_mock_payment_paid(
+            payment_record.payment_hash
+        )
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail=str(exc),
+        ) from exc
+
+    return {
+        "payment_id": payment_id,
+        "user_id": authenticated_user_id,
+        "status": "paid",
+        "mock_payment": True,
+        "amount_sats": payment_record.amount_sats,
+        "payment_hash": mock_payment.payment_hash,
+    }
 
 # ============================================================
 # PAYMENT VERIFICATION ENDPOINT
@@ -592,6 +665,8 @@ def payment_verify(
             else 0
         ),
     }
+
+
 
 
 # ============================================================

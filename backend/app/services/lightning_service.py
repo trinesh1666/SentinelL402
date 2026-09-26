@@ -1,36 +1,24 @@
 import asyncio
 import logging
-from unittest import result
+
 from nostrwalletconnect import NWCClient
 
-from app.config import NWC_CONNECTION_STRING, require_setting
-from app.middleware.error_handling import LightningServiceError
-logger = logging.getLogger("sentinell402.lightning")
-PAYMENT_AMOUNT_SATS = 10
-
 from app.config import (
+    LIGHTNING_PROVIDER,
     NWC_CONNECTION_STRING,
     require_setting,
 )
+from app.middleware.error_handling import LightningServiceError
+from app.services.mock_lightning_service import (
+    check_mock_payment,
+    create_mock_invoice,
+)
 
-from app.middleware.error_handling import (
-    LightningServiceError,
-)
-logger.info(
-    "Lightning payment lookup completed",
-    extra={
-        "payment_status": getattr(
-            result,
-            "status",
-            None,
-        ),
-        "payment_paid": getattr(
-            result,
-            "paid",
-            None,
-        ),
-    },
-)
+logger = logging.getLogger("sentinell402.lightning")
+
+PAYMENT_AMOUNT_SATS = 10
+
+
 def _get_nwc_uri() -> str:
     return require_setting(
         NWC_CONNECTION_STRING,
@@ -38,7 +26,7 @@ def _get_nwc_uri() -> str:
     )
 
 
-async def _create_invoice(
+async def _create_nwc_invoice(
     amount_sats: int,
     description: str,
 ):
@@ -61,19 +49,8 @@ async def _create_invoice(
             "Lightning invoice creation failed."
         ) from exc
 
-def create_lightning_invoice(
-    amount_sats: int,
-    description: str,
-):
-    return asyncio.run(
-        _create_invoice(
-            amount_sats,
-            description,
-        )
-    )
 
-
-async def _check_lightning_payment(
+async def _check_nwc_payment(
     payment_hash: str,
 ):
     try:
@@ -84,13 +61,20 @@ async def _check_lightning_payment(
                 payment_hash=payment_hash
             )
 
-        print("LIGHTNING PAYMENT LOOKUP")
-        print(
-            payment_hash,
-            result,
-            type(result),
-            getattr(result, "paid", None),
-            getattr(result, "status", None),
+        logger.info(
+            "Lightning payment lookup completed",
+            extra={
+                "payment_status": getattr(
+                    result,
+                    "status",
+                    None,
+                ),
+                "payment_paid": getattr(
+                    result,
+                    "paid",
+                    None,
+                ),
+            },
         )
 
         return result
@@ -104,11 +88,48 @@ async def _check_lightning_payment(
         ) from exc
 
 
+def create_lightning_invoice(
+    amount_sats: int,
+    description: str,
+):
+    provider = LIGHTNING_PROVIDER
+
+    if provider == "mock":
+        return create_mock_invoice(
+            amount_sats,
+            description,
+        )
+
+    if provider == "nwc":
+        return asyncio.run(
+            _create_nwc_invoice(
+                amount_sats,
+                description,
+            )
+        )
+
+    raise LightningServiceError(
+        f"Unsupported LIGHTNING_PROVIDER: {provider}"
+    )
+
+
 def check_lightning_payment(
     payment_hash: str,
 ):
-    return asyncio.run(
-        _check_lightning_payment(
+    provider = LIGHTNING_PROVIDER
+
+    if provider == "mock":
+        return check_mock_payment(
             payment_hash
         )
+
+    if provider == "nwc":
+        return asyncio.run(
+            _check_nwc_payment(
+                payment_hash
+            )
+        )
+
+    raise LightningServiceError(
+        f"Unsupported LIGHTNING_PROVIDER: {provider}"
     )

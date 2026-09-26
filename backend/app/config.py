@@ -43,7 +43,10 @@ CORS_ORIGINS = [
     if origin.strip()
 ]
 
-
+LIGHTNING_PROVIDER = os.getenv(
+    "LIGHTNING_PROVIDER",
+    "nwc",
+).strip().lower()
 def require_setting(
     value: str | None,
     name: str,
