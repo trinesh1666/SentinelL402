@@ -1,5 +1,10 @@
 from typing import Any, Dict
 
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from app.models import SecurityAnalysis, User
+
 from app.schemas.security_analysis import (
     SecurityAnalysisRequest,
 )
@@ -51,5 +56,37 @@ def analyze_network_security(
     )
 
     result_data["llm_analysis"] = llm_response
+
+    # Find the authenticated application user.
+    user = (
+        db.query(User)
+        .filter(User.user_id == authenticated_user)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Authenticated user was not found.",
+        )
+
+    security_analysis = SecurityAnalysis(
+        user_id=user.id,
+        source=source,
+        event_type=event_type,
+        severity=severity,
+        description=description,
+        ml_prediction=result_data["ml_prediction"],
+        ml_label=result_data["ml_label"],
+        confidence=result_data["confidence"],
+        risk_level=result_data["risk_level"],
+        explanation=result_data["explanation"],
+        recommendation=result_data["recommendation"],
+        llm_analysis=result_data["llm_analysis"],
+    )
+
+    db.add(security_analysis)
+    db.commit()
+    db.refresh(security_analysis)
 
     return result_data

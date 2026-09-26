@@ -1,13 +1,13 @@
 from typing import Any, cast
-from fastapi.middleware.cors import CORSMiddleware
 
+from app.services.metering_service import get_usage
 from app.logging_config import configure_logging
-
 from app.middleware.request_logging import request_logging_middleware
 from app.config import CORS_ORIGINS
 
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
+
 from sqlalchemy.orm import Session
 
 from app.services.health_service import check_database
@@ -171,26 +171,80 @@ def health_check():
 # ============================================================
 
 @app.get("/api/usage/{user_id}")
-def usage(
+def get_user_usage(
     user_id: str,
-    authenticated_user_id: str = Security(
-        get_authenticated_user
-    ),
     db: Session = Depends(get_db),
+    authenticated_user: str = Depends(get_authenticated_user),
 ):
-    if user_id != authenticated_user_id:
+    if user_id != authenticated_user:
         raise HTTPException(
             status_code=403,
-            detail=(
-                "You are not authorized to view "
-                "this user's usage."
-            ),
+            detail="You are not authorized to view this user's usage.",
         )
 
-    return get_usage(
+    usage = get_usage(
         db,
-        authenticated_user_id,
+        authenticated_user,
     )
+
+    return {
+        "user_id": authenticated_user,
+        "credits_remaining": usage["credits_remaining"],
+        "total_requests": usage["total_requests"],
+    }
+
+@app.get("/api/security/history")
+def get_security_history(
+    db: Session = Depends(get_db),
+    authenticated_user: str = Depends(get_authenticated_user),
+):
+    user = (
+        db.query(models.User)
+        .filter(
+            models.User.user_id == authenticated_user
+        )
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Authenticated user not found.",
+        )
+
+    analyses = (
+        db.query(models.SecurityAnalysis)
+        .filter(
+            models.SecurityAnalysis.user_id == user.id
+        )
+        .order_by(
+            models.SecurityAnalysis.created_at.desc()
+        )
+        .all()
+    )
+
+    return {
+        "user_id": authenticated_user,
+        "total": len(analyses),
+        "analyses": [
+            {
+                "id": analysis.id,
+                "source": analysis.source,
+                "event_type": analysis.event_type,
+                "severity": analysis.severity,
+                "description": analysis.description,
+                "ml_prediction": analysis.ml_prediction,
+                "ml_label": analysis.ml_label,
+                "confidence": analysis.confidence,
+                "risk_level": analysis.risk_level,
+                "explanation": analysis.explanation,
+                "recommendation": analysis.recommendation,
+                "llm_analysis": analysis.llm_analysis,
+                "created_at": analysis.created_at,
+            }
+            for analysis in analyses
+        ],
+    }
 
 @app.post(
     "/api/auth/register",

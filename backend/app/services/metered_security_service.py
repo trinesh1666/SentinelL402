@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from app.models import SecurityAnalysis, User
+
 from app.schemas.security_analysis import (
     SecurityAnalysisRequest,
 )
@@ -84,10 +86,18 @@ def run_metered_security_analysis(
             },
         )
 
+    # --------------------------------------------------------
+    # RUN ML SECURITY ANALYSIS
+    # --------------------------------------------------------
+
     result = perform_security_analysis(
         db,
         request,
     )
+
+    # --------------------------------------------------------
+    # CONSUME ONE AI CREDIT
+    # --------------------------------------------------------
 
     success = consume_credit(
         db,
@@ -107,6 +117,10 @@ def run_metered_security_analysis(
             },
         )
 
+    # --------------------------------------------------------
+    # UPDATE REMAINING CREDITS
+    # --------------------------------------------------------
+
     usage_after = get_usage(
         db,
         authenticated_user,
@@ -115,5 +129,46 @@ def run_metered_security_analysis(
     result.credits_remaining = (
         usage_after["credits_remaining"]
     )
+
+    # --------------------------------------------------------
+    # FIND AUTHENTICATED USER
+    # --------------------------------------------------------
+
+    user = (
+        db.query(User)
+        .filter(
+            User.user_id == authenticated_user
+        )
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Authenticated user was not found.",
+        )
+
+    # --------------------------------------------------------
+    # SAVE SECURITY ANALYSIS HISTORY
+    # --------------------------------------------------------
+
+    security_analysis = SecurityAnalysis(
+        user_id=user.id,
+        source=request.source,
+        event_type=request.event_type,
+        severity=request.severity,
+        description=request.description,
+        ml_prediction=result.ml_prediction,
+        ml_label=result.ml_label,
+        confidence=result.confidence,
+        risk_level=result.risk_level,
+        explanation=result.explanation,
+        recommendation=result.recommendation,
+        llm_analysis=None,
+    )
+
+    db.add(security_analysis)
+    db.commit()
+    db.refresh(security_analysis)
 
     return result
