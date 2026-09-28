@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -14,125 +16,751 @@
         rel="stylesheet"
         href="style.css"
     >
+
+
+    <!-- =====================================================
+         PROFESSIONAL DASHBOARD OVERRIDES
+    ====================================================== -->
+
+    <style>
+
+        /* =====================================================
+           GLOBAL DASHBOARD
+        ====================================================== */
+
+        body {
+            background: #eef3f8;
+        }
+
+
+        .app-shell {
+            min-height: 100vh;
+            background: #eef3f8;
+        }
+
+
+        .main-content {
+            background: #eef3f8;
+        }
+
+
+        /* =====================================================
+           PROFESSIONAL WELCOME PANEL
+        ====================================================== */
+
+        .welcome-panel {
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff 0%,
+                    #f7faff 100%
+                );
+
+            border: 1px solid #dce6f0;
+
+            border-left:
+                5px solid #1769aa;
+
+            box-shadow:
+                0 8px 24px
+                rgba(20, 55, 90, 0.07);
+
+            border-radius: 14px;
+        }
+
+
+        .welcome-label {
+            color: #1769aa;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+
+        .welcome-panel h2 {
+            color: #12385b;
+        }
+
+
+        .welcome-panel p {
+            color: #64748b;
+        }
+
+
+        /* =====================================================
+           SECTION HEADINGS
+        ====================================================== */
+
+        .section-heading {
+            margin-top: 30px;
+            margin-bottom: 18px;
+        }
+
+
+        .section-heading h2 {
+            color: #12385b;
+            font-weight: 750;
+        }
+
+
+        .section-heading p {
+            color: #718096;
+        }
+
+
+        /* =====================================================
+           STATISTICS
+        ====================================================== */
+
+        .stats-grid {
+            gap: 18px;
+        }
+
+
+        .stat-card {
+            background: #ffffff;
+
+            border:
+                1px solid #dbe4ed;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 5px 18px
+                rgba(20, 55, 90, 0.06);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 10px 25px
+                rgba(20, 55, 90, 0.10);
+        }
+
+
+        .stat-icon {
+            background: #edf5fb;
+            color: #1769aa;
+        }
+
+
+        .stat-label {
+            color: #64748b;
+        }
+
+
+        .stat-value {
+            color: #12385b;
+        }
+
+
+        .status-value {
+            color: #16803c;
+        }
+
+
+        /* =====================================================
+           DASHBOARD CARDS
+        ====================================================== */
+
+        .card {
+            background: #ffffff;
+
+            border:
+                1px solid #dbe4ed;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 5px 18px
+                rgba(20, 55, 90, 0.055);
+        }
+
+
+        .card-header {
+            border-bottom:
+                1px solid #edf1f5;
+        }
+
+
+        .card-header h3 {
+            color: #12385b;
+        }
+
+
+        .card-header p {
+            color: #718096;
+        }
+
+
+        /* =====================================================
+           ANALYTICS GRID
+        ====================================================== */
+
+        .dashboard-analytics {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1.65fr)
+                minmax(320px, 1fr);
+
+            gap: 20px;
+
+            margin-top: 20px;
+            margin-bottom: 24px;
+        }
+
+
+        .analytics-card {
+
+            background: #ffffff;
+
+            border:
+                1px solid #dbe4ed;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 5px 18px
+                rgba(20, 55, 90, 0.06);
+
+            overflow: hidden;
+        }
+
+
+        .analytics-card-header {
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items:
+                flex-start;
+
+            padding:
+                20px 22px 14px;
+
+            border-bottom:
+                1px solid #edf1f5;
+        }
+
+
+        .analytics-card-header h3 {
+
+            margin: 0;
+
+            color: #12385b;
+
+            font-size: 17px;
+
+            font-weight: 750;
+        }
+
+
+        .analytics-card-header p {
+
+            margin:
+                6px 0 0;
+
+            color: #718096;
+
+            font-size: 13px;
+        }
+
+
+        .analytics-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            padding:
+                6px 10px;
+
+            border-radius: 20px;
+
+            background: #edf8f1;
+
+            color: #16803c;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                0.5px;
+        }
+
+
+        .analytics-badge::before {
+
+            content: "";
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #26a65b;
+        }
+
+
+        .chart-container {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 260px;
+
+            padding:
+                18px 22px 22px;
+
+            box-sizing:
+                border-box;
+        }
+
+
+        .chart-container canvas {
+
+            display: block;
+
+            width: 100% !important;
+
+            height: 100% !important;
+        }
+
+
+        /* =====================================================
+           ACCOUNT SUMMARY
+        ====================================================== */
+
+        .account-summary {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 12px;
+
+            padding: 20px;
+        }
+
+
+        .account-summary-item {
+
+            padding: 18px;
+
+            background: #f7f9fc;
+
+            border:
+                1px solid #e5ebf2;
+
+            border-radius: 10px;
+        }
+
+
+        .account-summary-item span {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #718096;
+
+            font-size: 12px;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                0.5px;
+        }
+
+
+        .account-summary-item strong {
+
+            display: block;
+
+            color: #12385b;
+
+            font-size: 21px;
+        }
+
+
+        /* =====================================================
+           QUICK ACTIONS
+        ====================================================== */
+
+        .quick-actions {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 12px;
+        }
+
+
+        .quick-actions button {
+
+            min-height: 52px;
+
+            border-radius: 10px;
+        }
+
+
+        /* =====================================================
+           PLATFORM CAPABILITIES
+        ====================================================== */
+
+        .dashboard-capabilities {
+
+            margin-top: 20px;
+        }
+
+
+        .capability-item {
+
+            background: #f8fafc;
+
+            border:
+                1px solid #e7edf3;
+
+            border-radius: 10px;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .capability-item:hover {
+
+            background: #f1f6fb;
+
+            transform:
+                translateY(-2px);
+        }
+
+
+        /* =====================================================
+           MONITORING
+        ====================================================== */
+
+        #monitoring .stat-card {
+
+            min-height: 145px;
+        }
+
+
+        #monitoring .card {
+
+            margin-top: 20px;
+        }
+
+
+        /* =====================================================
+           STATUS COLORS
+        ====================================================== */
+
+        .status-online {
+            color: #16803c !important;
+        }
+
+
+        .status-offline {
+            color: #c0392b !important;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ====================================================== */
+
+        @media (max-width: 1100px) {
+
+            .dashboard-analytics {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .account-summary {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .quick-actions {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .dashboard-analytics {
+
+                gap: 15px;
+            }
+
+
+            .chart-container {
+
+                height: 230px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body>
 
+
 <div class="app-shell">
 
-    <!-- =========================================================
+
+    <!-- =====================================================
          SIDEBAR
-    ========================================================== -->
+    ====================================================== -->
 
     <aside class="sidebar">
 
-        <div class="brand">
 
-            <div class="brand-mark">
+        <!-- BRAND -->
+
+        <div class="sidebar-brand">
+
+            <div class="brand-logo">
                 S
             </div>
 
             <div>
-                <div class="brand-name">
-                    SentinelL402
-                </div>
 
-                <div class="brand-subtitle">
+                <strong>
+                    SentinelL402
+                </strong>
+
+                <span>
                     Security Console
-                </div>
+                </span>
+
             </div>
 
         </div>
 
 
+        <!-- NAVIGATION -->
+
         <nav class="sidebar-nav">
 
-            <button
+
+            <a
+                href="#"
                 class="nav-item active"
-                data-section="dashboard"
-                onclick="showSection('dashboard')"
+                onclick="showSection('dashboard'); return false;"
             >
-                <span class="nav-icon">▦</span>
-                <span>Dashboard</span>
-            </button>
+
+                <span>
+                    ▦
+                </span>
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="security"
-                onclick="showSection('security')"
+                onclick="showSection('security'); return false;"
             >
-                <span class="nav-icon">◈</span>
-                <span>Security Analysis</span>
-            </button>
+
+                <span>
+                    ◈
+                </span>
+
+                <span>
+                    Security Analysis
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="agent"
-                onclick="showSection('agent')"
+                onclick="showSection('agent'); return false;"
             >
-                <span class="nav-icon">✦</span>
-                <span>AI Agent</span>
-            </button>
+
+                <span>
+                    ✦
+                </span>
+
+                <span>
+                    AI Agent
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="payments"
-                onclick="showSection('payments')"
+                onclick="showSection('payments'); return false;"
             >
-                <span class="nav-icon">₿</span>
-                <span>Payments</span>
-            </button>
+
+                <span>
+                    ₿
+                </span>
+
+                <span>
+                    Payments
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="usage"
-                onclick="showSection('usage')"
+                onclick="showSection('usage'); return false;"
             >
-                <span class="nav-icon">▤</span>
-                <span>Usage</span>
-            </button>
+
+                <span>
+                    ▤
+                </span>
+
+                <span>
+                    Usage
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="api-keys"
-                onclick="showSection('api-keys')"
+                onclick="showSection('monitoring'); loadMonitoring(); return false;"
             >
-                <span class="nav-icon">🔑</span>
-                <span>API Keys</span>
-            </button>
+
+                <span>
+                    ◉
+                </span>
+
+                <span>
+                    Live Monitoring
+                </span>
+
+            </a>
 
 
-            <button
+            <a
+                href="#"
                 class="nav-item"
-                data-section="settings"
-                onclick="showSection('settings')"
+                onclick="showSection('api-keys'); return false;"
             >
-                <span class="nav-icon">⚙</span>
-                <span>Settings</span>
-            </button>
+
+                <span>
+                    🔑
+                </span>
+
+                <span>
+                    API Keys
+                </span>
+
+            </a>
+
+
+            <a
+                href="#"
+                class="nav-item"
+                onclick="showSection('settings'); return false;"
+            >
+
+                <span>
+                    ⚙
+                </span>
+
+                <span>
+                    Settings
+                </span>
+
+            </a>
 
         </nav>
 
 
+        <!-- SIDEBAR FOOTER -->
+
         <div class="sidebar-footer">
 
-            <div class="connection-status">
+            <div class="sidebar-api-status">
 
                 <span
-                    id="sidebarStatusDot"
+                    id="sidebarApiDot"
                     class="status-dot offline"
                 ></span>
 
-                <span id="sidebarStatus">
-                    Checking API...
+                <span>
+                    API Online
                 </span>
 
             </div>
+
+
+            <div class="sidebar-user">
+
+                <span>
+                    SIGNED IN AS
+                </span>
+
+                <strong id="sidebarUserId">
+                    --
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="logout-button"
+                onclick="logout()"
+            >
+
+                <span>
+                    ↪
+                </span>
+
+                Logout
+
+            </button>
+
 
             <div class="sidebar-version">
                 SentinelL402 v1.0.0
@@ -143,17 +771,25 @@
     </aside>
 
 
-    <!-- =========================================================
-         MAIN AREA
-    ========================================================== -->
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
 
     <main class="main-content">
 
-        <!-- TOP BAR -->
+
+        <!-- =================================================
+             TOP BAR
+        ================================================== -->
 
         <header class="topbar">
 
-            <div>
+
+            <div class="topbar-heading">
+
+                <div class="topbar-label">
+                    SENTINELL402 SECURITY PLATFORM
+                </div>
 
                 <h1 id="pageTitle">
                     Dashboard
@@ -166,51 +802,123 @@
             </div>
 
 
-            <div class="topbar-status">
+            <div class="topbar-right">
 
-                <span
-                    id="apiStatusDot"
-                    class="status-dot offline"
-                ></span>
 
-                <span id="apiStatus">
-                    API checking...
-                </span>
+                <div class="topbar-status">
+
+                    <span
+                        id="apiStatusDot"
+                        class="status-dot offline"
+                    ></span>
+
+                    <span id="apiStatus">
+                        API checking...
+                    </span>
+
+                </div>
+
+
+                <div class="topbar-user">
+
+                    <span class="topbar-user-label">
+                        Account
+                    </span>
+
+                    <strong id="dashboardUserId">
+                        --
+                    </strong>
+
+                </div>
 
             </div>
 
         </header>
 
 
-        <!-- =====================================================
+        <!-- =================================================
              DASHBOARD
-        ====================================================== -->
+        ================================================== -->
 
         <section
             id="dashboard"
             class="dashboard-section active-section"
         >
 
-            <div class="section-heading">
+
+            <!-- WELCOME -->
+
+            <div class="welcome-panel">
 
                 <div>
-                    <h2>System Overview</h2>
+
+                    <div class="welcome-label">
+                        SENTINELL402
+                    </div>
+
+                    <h2>
+                        Security Operations Dashboard
+                    </h2>
 
                     <p>
-                        Monitor your SentinelL402 API, credits,
-                        requests and security services.
+                        Monitor your API, security analysis,
+                        AI agent activity, credits and Lightning
+                        payments from one console.
                     </p>
+
+                </div>
+
+
+                <div class="welcome-status">
+
+                    <span class="status-dot online"></span>
+
+                    <span>
+                        Protected Session
+                    </span>
+
                 </div>
 
             </div>
 
 
+            <!-- SYSTEM OVERVIEW -->
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        System Overview
+                    </h2>
+
+                    <p>
+                        Monitor your SentinelL402 API,
+                        credits, requests and security services.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- STATISTICS -->
+
             <div class="stats-grid">
+
 
                 <div class="stat-card">
 
-                    <div class="stat-label">
-                        Available Credits
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ◉
+                        </div>
+
+                        <span class="stat-label">
+                            AVAILABLE CREDITS
+                        </span>
+
                     </div>
 
                     <div
@@ -229,8 +937,16 @@
 
                 <div class="stat-card">
 
-                    <div class="stat-label">
-                        Requests
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ↗
+                        </div>
+
+                        <span class="stat-label">
+                            REQUESTS
+                        </span>
+
                     </div>
 
                     <div
@@ -249,8 +965,16 @@
 
                 <div class="stat-card">
 
-                    <div class="stat-label">
-                        API Status
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ●
+                        </div>
+
+                        <span class="stat-label">
+                            API STATUS
+                        </span>
+
                     </div>
 
                     <div
@@ -266,21 +990,258 @@
 
                 </div>
 
+
+                <div class="stat-card">
+
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ◈
+                        </div>
+
+                        <span class="stat-label">
+                            SECURITY ENGINE
+                        </span>
+
+                    </div>
+
+                    <div class="stat-value">
+                        READY
+                    </div>
+
+                    <div class="stat-description">
+                        Random Forest + LLM
+                    </div>
+
+                </div>
+
             </div>
 
 
+            <!-- =================================================
+                 ANALYTICS
+            ================================================== -->
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Security Analytics
+                    </h2>
+
+                    <p>
+                        Real-time account and API activity overview.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-analytics">
+
+
+                <!-- REQUEST ACTIVITY -->
+
+                <div class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+
+                            <h3>
+                                📈 Request Activity
+                            </h3>
+
+                            <p>
+                                Recent API request activity.
+                            </p>
+
+                        </div>
+
+                        <span class="analytics-badge">
+                            LIVE
+                        </span>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <canvas
+                            id="requestsChart"
+                        ></canvas>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CREDIT STATUS -->
+
+                <div class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+
+                            <h3>
+                                ◉ Credit Status
+                            </h3>
+
+                            <p>
+                                Current account credit balance.
+                            </p>
+
+                        </div>
+
+                        <span class="analytics-badge">
+                            LIVE
+                        </span>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <canvas
+                            id="creditsChart"
+                        ></canvas>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SYSTEM HEALTH -->
+
+                <div class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+
+                            <h3>
+                                🛡 System Health
+                            </h3>
+
+                            <p>
+                                SentinelL402 backend availability.
+                            </p>
+
+                        </div>
+
+                        <span class="analytics-badge">
+                            STATUS
+                        </span>
+
+                    </div>
+
+
+                    <div class="chart-container">
+
+                        <canvas
+                            id="systemStatusChart"
+                        ></canvas>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCOUNT SUMMARY -->
+
+                <div class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+
+                            <h3>
+                                👤 Account Summary
+                            </h3>
+
+                            <p>
+                                Authenticated account information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="account-summary">
+
+
+                        <div class="account-summary-item">
+
+                            <span>
+                                User
+                            </span>
+
+                            <strong id="chartUser">
+                                --
+                            </strong>
+
+                        </div>
+
+
+                        <div class="account-summary-item">
+
+                            <span>
+                                Credits
+                            </span>
+
+                            <strong id="chartCredits">
+                                --
+                            </strong>
+
+                        </div>
+
+
+                        <div class="account-summary-item">
+
+                            <span>
+                                Requests
+                            </span>
+
+                            <strong id="chartRequests">
+                                --
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACCOUNT + QUICK ACTIONS
+            ================================================== -->
+
             <div class="dashboard-grid">
+
+
+                <!-- ACCOUNT -->
 
                 <div class="card">
 
                     <div class="card-header">
 
                         <div>
-                            <h3>Account</h3>
+
+                            <h3>
+                                Account Information
+                            </h3>
 
                             <p>
                                 Current authenticated account.
                             </p>
+
                         </div>
 
                     </div>
@@ -288,12 +1249,15 @@
 
                     <div class="info-list">
 
+
                         <div class="info-row">
 
-                            <span>User ID</span>
+                            <span>
+                                User ID
+                            </span>
 
                             <strong id="userId">
-                                l402-402-demo-user
+                                --
                             </strong>
 
                         </div>
@@ -301,7 +1265,9 @@
 
                         <div class="info-row">
 
-                            <span>Credits</span>
+                            <span>
+                                Credits
+                            </span>
 
                             <strong id="credits">
                                 --
@@ -312,10 +1278,38 @@
 
                         <div class="info-row">
 
-                            <span>Requests</span>
+                            <span>
+                                Requests
+                            </span>
 
                             <strong id="requests">
                                 --
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Authentication
+                            </span>
+
+                            <strong>
+                                X-API-Key
+                            </strong>
+
+                        </div>
+
+
+                        <div class="info-row">
+
+                            <span>
+                                Payment Network
+                            </span>
+
+                            <strong>
+                                Bitcoin Lightning
                             </strong>
 
                         </div>
@@ -325,16 +1319,22 @@
                 </div>
 
 
+                <!-- QUICK ACTIONS -->
+
                 <div class="card">
 
                     <div class="card-header">
 
                         <div>
-                            <h3>Quick Actions</h3>
+
+                            <h3>
+                                Quick Actions
+                            </h3>
 
                             <p>
-                                Access the main SentinelL402 tools.
+                                Start using SentinelL402 services.
                             </p>
+
                         </div>
 
                     </div>
@@ -342,28 +1342,167 @@
 
                     <div class="quick-actions">
 
+
                         <button
+                            type="button"
                             class="primary-button"
                             onclick="showSection('security')"
                         >
-                            Security Analysis
+                            ◈ Security Analysis
                         </button>
 
 
                         <button
+                            type="button"
                             class="secondary-button"
                             onclick="showSection('agent')"
                         >
-                            Run AI Agent
+                            ✦ Run AI Agent
                         </button>
 
 
                         <button
+                            type="button"
                             class="secondary-button"
-                            onclick="showSection('settings')"
+                            onclick="showSection('payments')"
                         >
-                            Configure API Key
+                            ₿ View Payments
                         </button>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="showSection('usage')"
+                        >
+                            ▤ View Usage
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            onclick="showSection('monitoring'); loadMonitoring();"
+                        >
+                            ◉ Live Monitoring
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PLATFORM CAPABILITIES -->
+
+            <div class="card dashboard-capabilities">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3>
+                            SentinelL402 Platform
+                        </h3>
+
+                        <p>
+                            AI-powered security with metered
+                            Lightning payments.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="capability-grid">
+
+
+                    <div class="capability-item">
+
+                        <div class="capability-icon">
+                            ◈
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                ML Security Analysis
+                            </strong>
+
+                            <p>
+                                CIC-IDS2017 network traffic
+                                classification.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="capability-item">
+
+                        <div class="capability-icon">
+                            ✦
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                AI Agent
+                            </strong>
+
+                            <p>
+                                Intent routing and automated
+                                security tool execution.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="capability-item">
+
+                        <div class="capability-icon">
+                            ₿
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                L402 Payments
+                            </strong>
+
+                            <p>
+                                Bitcoin Lightning powered
+                                credit metering.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="capability-item">
+
+                        <div class="capability-icon">
+                            S
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Multi-User Security
+                            </strong>
+
+                            <p>
+                                Individual API keys, users,
+                                usage and payment tracking.
+                            </p>
+
+                        </div>
 
                     </div>
 
@@ -386,12 +1525,16 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>Security Analysis</h2>
+
+                    <h2>
+                        Security Analysis
+                    </h2>
 
                     <p>
                         Analyze network traffic using the
                         SentinelL402 ML security engine.
                     </p>
+
                 </div>
 
             </div>
@@ -402,18 +1545,23 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>Network Security Request</h3>
+
+                        <h3>
+                            Network Security Request
+                        </h3>
 
                         <p>
                             The frontend sends a complete
                             78-feature CIC-IDS2017 request.
                         </p>
+
                     </div>
 
                 </div>
 
 
                 <div class="form-grid">
+
 
                     <div class="form-group">
 
@@ -442,7 +1590,10 @@
                                 Low
                             </option>
 
-                            <option value="medium" selected>
+                            <option
+                                value="medium"
+                                selected
+                            >
                                 Medium
                             </option>
 
@@ -487,6 +1638,10 @@
 
                     <span class="feature-badge">
                         Random Forest
+                    </span>
+
+                    <span class="feature-badge">
+                        LLM Explanation
                     </span>
 
                 </div>
@@ -565,6 +1720,7 @@
                     </button>
 
                     <button
+                        type="button"
                         class="secondary-button"
                         onclick="retrySecurityAnalysis()"
                     >
@@ -585,11 +1741,15 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>Analysis Result</h3>
+
+                        <h3>
+                            Analysis Result
+                        </h3>
 
                         <p>
                             ML classification and LLM explanation.
                         </p>
+
                     </div>
 
                 </div>
@@ -597,39 +1757,95 @@
 
                 <div class="result-grid">
 
-                    <div class="result-item">
-                        <span>Source</span>
-                        <strong id="resultSource">--</strong>
-                    </div>
 
                     <div class="result-item">
-                        <span>Event Type</span>
-                        <strong id="resultEventType">--</strong>
+
+                        <span>
+                            Source
+                        </span>
+
+                        <strong id="resultSource">
+                            --
+                        </strong>
+
                     </div>
 
-                    <div class="result-item">
-                        <span>Prediction</span>
-                        <strong id="prediction">--</strong>
-                    </div>
 
                     <div class="result-item">
-                        <span>ML Label</span>
-                        <strong id="mlLabel">--</strong>
+
+                        <span>
+                            Event Type
+                        </span>
+
+                        <strong id="resultEventType">
+                            --
+                        </strong>
+
                     </div>
 
-                    <div class="result-item">
-                        <span>Confidence</span>
-                        <strong id="confidence">--</strong>
-                    </div>
 
                     <div class="result-item">
-                        <span>Risk Level</span>
-                        <strong id="riskLevel">--</strong>
+
+                        <span>
+                            Prediction
+                        </span>
+
+                        <strong id="prediction">
+                            --
+                        </strong>
+
                     </div>
 
+
                     <div class="result-item">
-                        <span>Credits Remaining</span>
-                        <strong id="resultCredits">--</strong>
+
+                        <span>
+                            ML Label
+                        </span>
+
+                        <strong id="mlLabel">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="result-item">
+
+                        <span>
+                            Confidence
+                        </span>
+
+                        <strong id="confidence">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="result-item">
+
+                        <span>
+                            Risk Level
+                        </span>
+
+                        <strong id="riskLevel">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="result-item">
+
+                        <span>
+                            Credits Remaining
+                        </span>
+
+                        <strong id="resultCredits">
+                            --
+                        </strong>
+
                     </div>
 
                 </div>
@@ -637,7 +1853,9 @@
 
                 <div class="result-section">
 
-                    <h4>Explanation</h4>
+                    <h4>
+                        Explanation
+                    </h4>
 
                     <p id="explanation">
                         --
@@ -648,7 +1866,9 @@
 
                 <div class="result-section">
 
-                    <h4>Recommendation</h4>
+                    <h4>
+                        Recommendation
+                    </h4>
 
                     <p id="recommendation">
                         --
@@ -659,7 +1879,9 @@
 
                 <div class="result-section">
 
-                    <h4>LLM Analysis</h4>
+                    <h4>
+                        LLM Analysis
+                    </h4>
 
                     <div
                         id="llmAnalysis"
@@ -687,12 +1909,16 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>AI Agent</h2>
+
+                    <h2>
+                        AI Agent
+                    </h2>
 
                     <p>
                         Use the SentinelL402 agent to classify
                         intent, select tools and execute security analysis.
                     </p>
+
                 </div>
 
             </div>
@@ -703,18 +1929,23 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>Agent Request</h3>
+
+                        <h3>
+                            Agent Request
+                        </h3>
 
                         <p>
                             The authenticated API identity is used
                             by the backend for usage and payment tracking.
                         </p>
+
                     </div>
 
                 </div>
 
 
                 <div class="form-grid">
+
 
                     <div class="form-group">
 
@@ -762,7 +1993,10 @@
                             Low
                         </option>
 
-                        <option value="medium" selected>
+                        <option
+                            value="medium"
+                            selected
+                        >
                             Medium
                         </option>
 
@@ -796,7 +2030,7 @@
                 <div class="feature-summary">
 
                     <span class="feature-badge">
-                        Agent
+                        AI Agent
                     </span>
 
                     <span class="feature-badge">
@@ -879,6 +2113,7 @@
                 <div class="payment-actions">
 
                     <button
+                        id="verifyAgentPaymentButton"
                         class="primary-button"
                         onclick="verifyAgentPayment()"
                     >
@@ -886,6 +2121,7 @@
                     </button>
 
                     <button
+                        type="button"
                         class="secondary-button"
                         onclick="retryAgent()"
                     >
@@ -906,11 +2142,15 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>Agent Result</h3>
+
+                        <h3>
+                            Agent Result
+                        </h3>
 
                         <p>
                             Agent routing and security analysis result.
                         </p>
+
                     </div>
 
                 </div>
@@ -918,55 +2158,66 @@
 
                 <div class="result-grid">
 
+
                     <div class="result-item">
                         <span>Action</span>
                         <strong id="agentAction">--</strong>
                     </div>
+
 
                     <div class="result-item">
                         <span>Tool</span>
                         <strong id="agentTool">--</strong>
                     </div>
 
+
                     <div class="result-item">
                         <span>Source</span>
                         <strong id="agentResultSource">--</strong>
                     </div>
+
 
                     <div class="result-item">
                         <span>Event Type</span>
                         <strong id="agentResultEventType">--</strong>
                     </div>
 
+
                     <div class="result-item">
                         <span>Prediction</span>
                         <strong id="agentPrediction">--</strong>
                     </div>
+
 
                     <div class="result-item">
                         <span>ML Label</span>
                         <strong id="agentMLLabel">--</strong>
                     </div>
 
+
                     <div class="result-item">
                         <span>Confidence</span>
                         <strong id="agentConfidence">--</strong>
                     </div>
+
 
                     <div class="result-item">
                         <span>Risk Level</span>
                         <strong id="agentRiskLevel">--</strong>
                     </div>
 
+
                     <div class="result-item">
                         <span>Credits</span>
                         <strong id="agentCredits">--</strong>
                     </div>
 
+
                     <div class="result-item">
                         <span>User ID</span>
                         <strong id="agentUserId">--</strong>
                     </div>
+
 
                     <div class="result-item">
                         <span>Feature Count</span>
@@ -978,7 +2229,9 @@
 
                 <div class="result-section">
 
-                    <h4>Explanation</h4>
+                    <h4>
+                        Explanation
+                    </h4>
 
                     <p id="agentExplanation">
                         --
@@ -989,7 +2242,9 @@
 
                 <div class="result-section">
 
-                    <h4>Recommendation</h4>
+                    <h4>
+                        Recommendation
+                    </h4>
 
                     <p id="agentRecommendation">
                         --
@@ -1000,7 +2255,9 @@
 
                 <div class="result-section">
 
-                    <h4>LLM Analysis</h4>
+                    <h4>
+                        LLM Analysis
+                    </h4>
 
                     <div
                         id="agentLLMAnalysis"
@@ -1028,12 +2285,16 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>Payments</h2>
+
+                    <h2>
+                        Payments
+                    </h2>
 
                     <p>
                         Bitcoin Lightning payments used to restore
                         SentinelL402 API credits.
                     </p>
+
                 </div>
 
             </div>
@@ -1044,12 +2305,16 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>Latest Payment</h3>
+
+                        <h3>
+                            Latest Payment
+                        </h3>
 
                         <p>
                             Payment information from the current
                             metered request.
                         </p>
+
                     </div>
 
                 </div>
@@ -1059,7 +2324,9 @@
 
                     <div class="info-row">
 
-                        <span>Payment ID</span>
+                        <span>
+                            Payment ID
+                        </span>
 
                         <strong id="paymentId">
                             --
@@ -1070,7 +2337,9 @@
 
                     <div class="info-row">
 
-                        <span>Amount</span>
+                        <span>
+                            Amount
+                        </span>
 
                         <strong id="paymentAmount">
                             --
@@ -1105,11 +2374,15 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>Usage</h2>
+
+                    <h2>
+                        Usage
+                    </h2>
 
                     <p>
                         Current account-level API usage.
                     </p>
+
                 </div>
 
             </div>
@@ -1165,6 +2438,261 @@
 
 
         <!-- =====================================================
+             LIVE MONITORING
+        ====================================================== -->
+
+        <section
+            id="monitoring"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Live Monitoring
+                    </h2>
+
+                    <p>
+                        Monitor the authenticated SentinelL402
+                        account and API activity in real time.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="stats-grid">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ●
+                        </div>
+
+                        <span class="stat-label">
+                            USER
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="monitoringUser"
+                        class="stat-value"
+                    >
+                        --
+                    </div>
+
+                    <div class="stat-description">
+                        Authenticated account
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ◉
+                        </div>
+
+                        <span class="stat-label">
+                            CREDITS
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="monitoringCredits"
+                        class="stat-value"
+                    >
+                        --
+                    </div>
+
+                    <div class="stat-description">
+                        Credits remaining
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ↗
+                        </div>
+
+                        <span class="stat-label">
+                            REQUESTS
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="monitoringRequests"
+                        class="stat-value"
+                    >
+                        --
+                    </div>
+
+                    <div class="stat-description">
+                        Requests processed
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-card-top">
+
+                        <div class="stat-icon">
+                            ●
+                        </div>
+
+                        <span class="stat-label">
+                            MONITORING
+                        </span>
+
+                    </div>
+
+                    <div
+                        id="monitoringStatus"
+                        class="stat-value status-value"
+                    >
+                        Checking
+                    </div>
+
+                    <div class="stat-description">
+                        Live monitoring status
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3>
+                            Monitoring Details
+                        </h3>
+
+                        <p>
+                            Live authenticated account information
+                            from the SentinelL402 backend.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        onclick="loadMonitoring()"
+                    >
+                        Refresh Monitoring
+                    </button>
+
+                </div>
+
+
+                <div class="info-list">
+
+
+                    <div class="info-row">
+
+                        <span>
+                            User ID
+                        </span>
+
+                        <strong id="monitoringDetailUser">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Credits Remaining
+                        </span>
+
+                        <strong id="monitoringDetailCredits">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Total Requests
+                        </span>
+
+                        <strong id="monitoringDetailRequests">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Authentication
+                        </span>
+
+                        <strong>
+                            X-API-Key
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Backend
+                        </span>
+
+                        <strong>
+                            127.0.0.1:8001
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="monitoringMessage"
+                    class="status-text"
+                >
+                    Monitoring data has not been loaded yet.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
              API KEYS
         ====================================================== -->
 
@@ -1176,11 +2704,15 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>API Keys</h2>
+
+                    <h2>
+                        API Keys
+                    </h2>
 
                     <p>
                         Authentication information for SentinelL402.
                     </p>
+
                 </div>
 
             </div>
@@ -1191,18 +2723,23 @@
                 <div class="card-header">
 
                     <div>
-                        <h3>X-API-Key Authentication</h3>
+
+                        <h3>
+                            X-API-Key Authentication
+                        </h3>
 
                         <p>
                             SentinelL402 protects authenticated API
                             endpoints using the X-API-Key header.
                         </p>
+
                     </div>
 
                 </div>
 
 
                 <div class="api-key-information">
+
 
                     <div class="information-box">
 
@@ -1277,27 +2814,37 @@
             <div class="section-heading">
 
                 <div>
-                    <h2>Settings</h2>
+
+                    <h2>
+                        Settings
+                    </h2>
 
                     <p>
                         Configure the SentinelL402 frontend.
                     </p>
+
                 </div>
 
             </div>
 
+
+            <!-- AUTHENTICATION -->
 
             <div class="card">
 
                 <div class="card-header">
 
                     <div>
-                        <h3>API Authentication</h3>
+
+                        <h3>
+                            API Authentication
+                        </h3>
 
                         <p>
                             Enter the API key generated by your
                             SentinelL402 backend.
                         </p>
+
                     </div>
 
                 </div>
@@ -1322,6 +2869,7 @@
                 <div class="form-actions">
 
                     <button
+                        type="button"
                         class="primary-button"
                         onclick="saveAPIKey()"
                     >
@@ -1330,6 +2878,7 @@
 
 
                     <button
+                        type="button"
                         class="secondary-button"
                         onclick="removeAPIKey()"
                     >
@@ -1341,7 +2890,7 @@
                         id="apiKeyStatus"
                         class="status-text"
                     >
-                        Not configured
+                        API key configured
                     </span>
 
                 </div>
@@ -1349,16 +2898,23 @@
             </div>
 
 
+            <!-- CONFIGURATION -->
+
             <div class="card">
 
                 <div class="card-header">
 
                     <div>
-                        <h3>Frontend Configuration</h3>
+
+                        <h3>
+                            Platform Configuration
+                        </h3>
 
                         <p>
-                            Current development configuration.
+                            Current SentinelL402 development
+                            configuration.
                         </p>
+
                     </div>
 
                 </div>
@@ -1366,12 +2922,15 @@
 
                 <div class="info-list">
 
+
                     <div class="info-row">
 
-                        <span>Backend</span>
+                        <span>
+                            Backend
+                        </span>
 
                         <strong>
-                            http://127.0.0.1:8000
+                            http://127.0.0.1:8001
                         </strong>
 
                     </div>
@@ -1379,7 +2938,9 @@
 
                     <div class="info-row">
 
-                        <span>Frontend</span>
+                        <span>
+                            Frontend
+                        </span>
 
                         <strong>
                             http://localhost:3000
@@ -1390,7 +2951,9 @@
 
                     <div class="info-row">
 
-                        <span>Model Dataset</span>
+                        <span>
+                            Dataset
+                        </span>
 
                         <strong>
                             CIC-IDS2017
@@ -1401,10 +2964,51 @@
 
                     <div class="info-row">
 
-                        <span>LLM</span>
+                        <span>
+                            ML Model
+                        </span>
+
+                        <strong>
+                            Random Forest
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            LLM
+                        </span>
 
                         <strong>
                             Ollama
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Payment
+                        </span>
+
+                        <strong>
+                            L402 / Bitcoin Lightning
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-row">
+
+                        <span>
+                            Authentication
+                        </span>
+
+                        <strong>
+                            API Key
                         </strong>
 
                     </div>
@@ -1413,14 +3017,1079 @@
 
             </div>
 
+
+            <!-- ACCOUNT -->
+
+            <div class="card account-actions-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3>
+                            Account Actions
+                        </h3>
+
+                        <p>
+                            Manage your current SentinelL402 session.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="account-session-box">
+
+                    <div>
+
+                        <span>
+                            Signed in as
+                        </span>
+
+                        <strong id="accountUserId">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Session
+                        </span>
+
+                        <strong class="session-active">
+                            Active
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="logout-button logout-button-large"
+                    onclick="logout()"
+                >
+
+                    <span class="logout-icon">
+                        ↪
+                    </span>
+
+                    <span>
+                        Logout from SentinelL402
+                    </span>
+
+                </button>
+
+            </div>
+
         </section>
+
 
     </main>
 
 </div>
 
 
+<!-- =========================================================
+     APPLICATION JAVASCRIPT
+========================================================== -->
+
 <script src="app.js"></script>
 
+
+<!-- =========================================================
+     DASHBOARD GRAPH ENGINE
+========================================================== -->
+
+<script>
+
+(function () {
+
+    const API_BASE =
+        "http://127.0.0.1:8001";
+
+
+    const USER_ID_KEY =
+        "sentinell402_user_id";
+
+
+    const API_KEY_KEY =
+        "sentinell402_api_key";
+
+
+    let requestHistory = [];
+
+
+    /* =====================================================
+       HELPERS
+    ====================================================== */
+
+    function getUserId() {
+
+        return localStorage.getItem(
+            USER_ID_KEY
+        ) || "--";
+
+    }
+
+
+    function getAPIKey() {
+
+        return localStorage.getItem(
+            API_KEY_KEY
+        ) || "";
+
+    }
+
+
+    function numberValue(value) {
+
+        const parsed =
+            Number(value);
+
+        return Number.isFinite(parsed)
+            ? parsed
+            : 0;
+
+    }
+
+
+    /* =====================================================
+       CANVAS SETUP
+    ====================================================== */
+
+    function prepareCanvas(canvas) {
+
+        if (!canvas) {
+            return null;
+        }
+
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+
+        const dpr =
+            window.devicePixelRatio || 1;
+
+
+        canvas.width =
+            Math.max(
+                300,
+                rect.width * dpr
+            );
+
+
+        canvas.height =
+            Math.max(
+                180,
+                rect.height * dpr
+            );
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            0,
+            0
+        );
+
+
+        return {
+            canvas,
+            ctx,
+            width: rect.width,
+            height: rect.height
+        };
+
+    }
+
+
+    /* =====================================================
+       REQUEST LINE GRAPH
+    ====================================================== */
+
+    function drawRequestChart() {
+
+        const chart =
+            prepareCanvas(
+                document.getElementById(
+                    "requestsChart"
+                )
+            );
+
+
+        if (!chart) {
+            return;
+        }
+
+
+        const {
+            ctx,
+            width,
+            height
+        } = chart;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const paddingLeft = 42;
+        const paddingRight = 18;
+        const paddingTop = 18;
+        const paddingBottom = 30;
+
+
+        const graphWidth =
+            width -
+            paddingLeft -
+            paddingRight;
+
+
+        const graphHeight =
+            height -
+            paddingTop -
+            paddingBottom;
+
+
+        /* GRID */
+
+        ctx.strokeStyle =
+            "#e7edf3";
+
+        ctx.lineWidth = 1;
+
+
+        for (
+            let i = 0;
+            i <= 4;
+            i++
+        ) {
+
+            const y =
+                paddingTop +
+                (
+                    graphHeight / 4
+                ) * i;
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                paddingLeft,
+                y
+            );
+
+            ctx.lineTo(
+                width -
+                paddingRight,
+                y
+            );
+
+            ctx.stroke();
+
+        }
+
+
+        let values =
+            requestHistory.length
+                ? requestHistory
+                : [0];
+
+
+        if (values.length < 2) {
+
+            values = [
+                values[0],
+                values[0]
+            ];
+
+        }
+
+
+        const maxValue =
+            Math.max(
+                1,
+                ...values
+            );
+
+
+        /* Y LABELS */
+
+        ctx.fillStyle =
+            "#8a98a8";
+
+        ctx.font =
+            "11px Arial";
+
+
+        for (
+            let i = 0;
+            i <= 4;
+            i++
+        ) {
+
+            const value =
+                Math.round(
+                    maxValue -
+                    (
+                        maxValue / 4
+                    ) * i
+                );
+
+
+            const y =
+                paddingTop +
+                (
+                    graphHeight / 4
+                ) * i +
+                4;
+
+
+            ctx.fillText(
+                String(value),
+                8,
+                y
+            );
+
+        }
+
+
+        /* LINE */
+
+        const step =
+            graphWidth /
+            Math.max(
+                1,
+                values.length - 1
+            );
+
+
+        ctx.beginPath();
+
+
+        values.forEach(
+            function (value, index) {
+
+                const x =
+                    paddingLeft +
+                    step * index;
+
+
+                const y =
+                    paddingTop +
+                    graphHeight -
+                    (
+                        value / maxValue
+                    ) * graphHeight;
+
+
+                if (index === 0) {
+
+                    ctx.moveTo(
+                        x,
+                        y
+                    );
+
+                } else {
+
+                    ctx.lineTo(
+                        x,
+                        y
+                    );
+
+                }
+
+            }
+        );
+
+
+        ctx.strokeStyle =
+            "#1769aa";
+
+        ctx.lineWidth = 3;
+
+        ctx.lineJoin =
+            "round";
+
+        ctx.lineCap =
+            "round";
+
+        ctx.stroke();
+
+
+        /* POINTS */
+
+        values.forEach(
+            function (value, index) {
+
+                const x =
+                    paddingLeft +
+                    step * index;
+
+
+                const y =
+                    paddingTop +
+                    graphHeight -
+                    (
+                        value / maxValue
+                    ) * graphHeight;
+
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    4,
+                    0,
+                    Math.PI * 2
+                );
+
+
+                ctx.fillStyle =
+                    "#1769aa";
+
+                ctx.fill();
+
+            }
+        );
+
+
+        /* CURRENT VALUE */
+
+        const current =
+            values[
+                values.length - 1
+            ];
+
+
+        ctx.fillStyle =
+            "#12385b";
+
+        ctx.font =
+            "bold 13px Arial";
+
+
+        ctx.fillText(
+            "Current: " + current,
+            width - 105,
+            height - 8
+        );
+
+    }
+
+
+    /* =====================================================
+       CREDIT DOUGHNUT GRAPH
+    ====================================================== */
+
+    function drawCreditChart(
+        credits
+    ) {
+
+        const chart =
+            prepareCanvas(
+                document.getElementById(
+                    "creditsChart"
+                )
+            );
+
+
+        if (!chart) {
+            return;
+        }
+
+
+        const {
+            ctx,
+            width,
+            height
+        } = chart;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const value =
+            Math.max(
+                0,
+                numberValue(credits)
+            );
+
+
+        /*
+         * The backend currently starts
+         * accounts with 5 credits.
+         *
+         * We display remaining credits
+         * as the main metric without
+         * inventing a usage history.
+         */
+
+        const reference =
+            Math.max(
+                5,
+                value
+            );
+
+
+        const ratio =
+            Math.min(
+                1,
+                value / reference
+            );
+
+
+        const centerX =
+            width / 2;
+
+
+        const centerY =
+            height / 2;
+
+
+        const radius =
+            Math.min(
+                width,
+                height
+            ) * 0.30;
+
+
+        /* BACKGROUND RING */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.strokeStyle =
+            "#e8eef4";
+
+        ctx.lineWidth = 22;
+
+        ctx.stroke();
+
+
+        /* ACTIVE RING */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            -Math.PI / 2,
+            (
+                -Math.PI / 2
+            ) +
+            (
+                Math.PI * 2 *
+                ratio
+            )
+        );
+
+
+        ctx.strokeStyle =
+            "#1769aa";
+
+        ctx.lineWidth = 22;
+
+        ctx.lineCap =
+            "round";
+
+        ctx.stroke();
+
+
+        /* CENTER */
+
+        ctx.fillStyle =
+            "#12385b";
+
+        ctx.font =
+            "bold 30px Arial";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.fillText(
+            String(value),
+            centerX,
+            centerY + 10
+        );
+
+
+        ctx.font =
+            "12px Arial";
+
+
+        ctx.fillStyle =
+            "#718096";
+
+
+        ctx.fillText(
+            "credits",
+            centerX,
+            centerY + 32
+        );
+
+
+        ctx.textAlign =
+            "left";
+
+    }
+
+
+    /* =====================================================
+       SYSTEM STATUS GRAPH
+    ====================================================== */
+
+    function drawSystemChart(
+        online
+    ) {
+
+        const chart =
+            prepareCanvas(
+                document.getElementById(
+                    "systemStatusChart"
+                )
+            );
+
+
+        if (!chart) {
+            return;
+        }
+
+
+        const {
+            ctx,
+            width,
+            height
+        } = chart;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const centerX =
+            width / 2;
+
+
+        const centerY =
+            height / 2;
+
+
+        /* OUTER CIRCLE */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            centerX,
+            centerY - 8,
+            58,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.strokeStyle =
+            "#dcefe3";
+
+        ctx.lineWidth = 12;
+
+        ctx.stroke();
+
+
+        /* STATUS CIRCLE */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            centerX,
+            centerY - 8,
+            58,
+            -Math.PI / 2,
+            Math.PI * 1.5
+        );
+
+
+        ctx.strokeStyle =
+            online
+                ? "#26a65b"
+                : "#c0392b";
+
+        ctx.lineWidth = 12;
+
+        ctx.lineCap =
+            "round";
+
+        ctx.stroke();
+
+
+        /* STATUS DOT */
+
+        ctx.beginPath();
+
+        ctx.arc(
+            centerX,
+            centerY - 8,
+            9,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            online
+                ? "#26a65b"
+                : "#c0392b";
+
+        ctx.fill();
+
+
+        /* STATUS TEXT */
+
+        ctx.fillStyle =
+            online
+                ? "#16803c"
+                : "#c0392b";
+
+        ctx.font =
+            "bold 18px Arial";
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.fillText(
+            online
+                ? "ONLINE"
+                : "OFFLINE",
+            centerX,
+            centerY + 78
+        );
+
+
+        ctx.font =
+            "12px Arial";
+
+
+        ctx.fillStyle =
+            "#718096";
+
+
+        ctx.fillText(
+            online
+                ? "Backend responding"
+                : "Backend unavailable",
+            centerX,
+            centerY + 99
+        );
+
+
+        ctx.textAlign =
+            "left";
+
+    }
+
+
+    /* =====================================================
+       UPDATE ACCOUNT SUMMARY
+    ====================================================== */
+
+    function updateSummary(
+        user,
+        credits,
+        requests
+    ) {
+
+        const userElement =
+            document.getElementById(
+                "chartUser"
+            );
+
+
+        const creditsElement =
+            document.getElementById(
+                "chartCredits"
+            );
+
+
+        const requestsElement =
+            document.getElementById(
+                "chartRequests"
+            );
+
+
+        if (userElement) {
+
+            userElement.textContent =
+                user || "--";
+
+        }
+
+
+        if (creditsElement) {
+
+            creditsElement.textContent =
+                credits;
+
+        }
+
+
+        if (requestsElement) {
+
+            requestsElement.textContent =
+                requests;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       LOAD LIVE DASHBOARD DATA
+    ====================================================== */
+
+    async function updateDashboardCharts() {
+
+        const apiKey =
+            getAPIKey();
+
+
+        if (!apiKey) {
+
+            drawRequestChart();
+
+            drawCreditChart(0);
+
+            drawSystemChart(false);
+
+            return;
+
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    API_BASE +
+                    "/api/monitoring/live",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "X-API-Key":
+                                apiKey
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Monitoring request failed"
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            const user =
+                data.user_id ||
+                getUserId();
+
+
+            const credits =
+                numberValue(
+                    data.credits_remaining
+                );
+
+
+            const requests =
+                numberValue(
+                    data.total_requests
+                );
+
+
+            requestHistory.push(
+                requests
+            );
+
+
+            if (
+                requestHistory.length >
+                10
+            ) {
+
+                requestHistory =
+                    requestHistory.slice(
+                        -10
+                    );
+
+            }
+
+
+            updateSummary(
+                user,
+                credits,
+                requests
+            );
+
+
+            drawRequestChart();
+
+            drawCreditChart(
+                credits
+            );
+
+            drawSystemChart(
+                true
+            );
+
+        } catch (error) {
+
+            console.warn(
+                "Dashboard chart update failed:",
+                error
+            );
+
+
+            drawRequestChart();
+
+            drawCreditChart(0);
+
+            drawSystemChart(false);
+
+        }
+
+    }
+
+
+    /* =====================================================
+       INITIALIZE
+    ====================================================== */
+
+    function initializeDashboardCharts() {
+
+        updateDashboardCharts();
+
+
+        setInterval(
+            updateDashboardCharts,
+            10000
+        );
+
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                updateDashboardCharts();
+
+            }
+        );
+
+    }
+
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const user =
+                getUserId();
+
+
+            const sidebarUser =
+                document.getElementById(
+                    "sidebarUserId"
+                );
+
+
+            const dashboardUser =
+                document.getElementById(
+                    "dashboardUserId"
+                );
+
+
+            const accountUser =
+                document.getElementById(
+                    "accountUserId"
+                );
+
+
+            if (sidebarUser) {
+
+                sidebarUser.textContent =
+                    user;
+
+            }
+
+
+            if (dashboardUser) {
+
+                dashboardUser.textContent =
+                    user;
+
+            }
+
+
+            if (accountUser) {
+
+                accountUser.textContent =
+                    user;
+
+            }
+
+
+            initializeDashboardCharts();
+
+        });
+
+})();
+
+</script>
+
+
 </body>
+
 </html>

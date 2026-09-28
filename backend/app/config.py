@@ -89,3 +89,7 @@ def validate_lightning_configuration() -> None:
             NWC_CONNECTION_STRING,
             "NWC_CONNECTION_STRING",
         )
+
+
+# compatibility alias for older imports
+validate_lightning_config = validate_lightning_configuration

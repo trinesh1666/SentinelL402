@@ -1,37 +1,21 @@
+import time
 from typing import Any, cast
 
+from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
+from app import models
+from app.agent.agent import SentinelAgent
+from app.agent.models import AgentRequest
+from app.api.monitoring import router as monitoring_router
 from app.config import (
     CORS_ORIGINS,
     LIGHTNING_PROVIDER,
     validate_lightning_configuration,
 )
-
-from app.services.mock_lightning_service import mark_mock_payment_paid
-
-from app.services.metering_service import get_usage
-from app.logging_config import configure_logging
-from app.middleware.request_logging import request_logging_middleware
-from app.config import CORS_ORIGINS
-
-from fastapi import Depends, FastAPI, HTTPException, Security
-from fastapi.middleware.cors import CORSMiddleware
-
-from sqlalchemy.orm import Session
-
-from app.services.health_service import check_database
-
-from app import models
 from app.database import get_db
-from app.services.auth_service import get_authenticated_user
-
-from app.agent.agent import SentinelAgent
-from app.agent.models import AgentRequest
-
-from app.schemas.api_key import (
-    APIKeyResponse,
-    APIKeyRevokeResponse,
-)
-
+from app.logging_config import configure_logging
 from app.middleware.error_handling import (
     DatabaseServiceError,
     LLMServiceError,
@@ -41,62 +25,68 @@ from app.middleware.error_handling import (
     lightning_service_exception_handler,
     unexpected_exception_handler,
 )
-
-from app.services.api_key_service import (
-    create_api_key,
-    list_user_api_keys,
-    revoke_api_key,
-)
+from app.middleware.request_logging import request_logging_middleware
 from app.schemas.agent import (
     AgentRequestSchema,
     AgentResponseSchema,
 )
-
+from app.schemas.api_key import (
+    APIKeyResponse,
+    APIKeyRevokeResponse,
+)
 from app.schemas.auth import (
     RegisterRequest,
     RegisterResponse,
 )
-
 from app.schemas.llm import (
     SecurityEvent,
     LLMAnalysis,
 )
-
-from app.services.rate_limit_dependency import check_rate_limit
-
-from app.services.llm_service import (
-    analyze_security_event,
-)
-from app.services.metering_service import (
-    can_use_ai,
-    consume_credit,
-    get_usage,
-    get_or_create_user,
-)
-
-from app.schemas.security_analysis import (
-    SecurityAnalysisRequest,
-    SecurityAnalysisResponse,
-)
-
-from app.services.metered_security_service import (
-    run_metered_security_analysis,
-)
-
-from app.services.payment_service import (
-    create_payment,
-    verify_payment,
-)
-
 from app.schemas.payment import (
     PaymentRequiredResponse,
     PaymentCreateResponse,
     PaymentVerifyResponse,
 )
+from app.schemas.security_analysis import (
+    SecurityAnalysisRequest,
+    SecurityAnalysisResponse,
+)
+from app.services.api_key_service import (
+    create_api_key,
+    list_user_api_keys,
+    revoke_api_key,
+)
+from app.services.auth_service import get_authenticated_user
+from app.services.health_service import check_database
+from app.services.llm_service import analyze_security_event
+from app.services.metered_security_service import (
+    run_metered_security_analysis,
+)
+from app.services.metering_service import (
+    can_use_ai,
+    consume_credit,
+    get_or_create_user,
+    get_usage,
+)
+from app.services.mock_lightning_service import (
+    mark_mock_payment_paid,
+)
+from app.services.monitoring_service import (
+    monitoring_service,
+)
+from app.services.payment_service import (
+    create_payment,
+    verify_payment,
+)
+from app.services.rate_limit_dependency import (
+    check_rate_limit,
+)
+
 
 # ============================================================
 # FASTAPI APPLICATION
 # ============================================================
+
 configure_logging()
 
 validate_lightning_configuration()
@@ -106,6 +96,42 @@ app = FastAPI(
     version="0.2.0",
 )
 
+
+# ============================================================
+# MONITORING ROUTER
+# ============================================================
+
+app.include_router(monitoring_router)
+
+
+# ============================================================
+# REQUEST MONITORING MIDDLEWARE
+# ============================================================
+
+@app.middleware("http")
+async def monitoring_middleware(request, call_next):
+    try:
+        response = await call_next(request)
+
+        monitoring_service.record_request(
+            success=response.status_code < 400,
+            status_code=response.status_code,
+        )
+
+        return response
+
+    except Exception:
+        monitoring_service.record_request(
+            success=False,
+            status_code=500,
+        )
+        raise
+
+
+# ============================================================
+# CORS
+# ============================================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -113,8 +139,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ============================================================
+# READINESS CHECK
+# ============================================================
+
 @app.get("/ready")
-def readiness_check(db: Session = Depends(get_db)):
+def readiness_check(
+    db: Session = Depends(get_db),
+):
     if not check_database(db):
         raise HTTPException(
             status_code=503,
@@ -126,19 +160,40 @@ def readiness_check(db: Session = Depends(get_db)):
         "database": "ok",
     }
 
+
+# ============================================================
+# EXCEPTION HANDLERS
+# ============================================================
+
 app.add_exception_handler(
     Exception,
     unexpected_exception_handler,
 )
+
+app.add_exception_handler(
+    DatabaseServiceError,
+    database_service_exception_handler,
+)
+
 app.add_exception_handler(
     LLMServiceError,
     llm_service_exception_handler,
 )
-app.middleware("http")(request_logging_middleware)
+
+app.add_exception_handler(
+    LightningServiceError,
+    lightning_service_exception_handler,
+)
+
 
 # ============================================================
-# CORS
+# REQUEST LOGGING
 # ============================================================
+
+app.middleware("http")(
+    request_logging_middleware
+)
+
 
 # ============================================================
 # ROOT ENDPOINT
@@ -162,6 +217,8 @@ def health_check():
     return {
         "status": "healthy",
     }
+
+
 # ============================================================
 # USAGE ENDPOINT
 # ============================================================
@@ -170,12 +227,17 @@ def health_check():
 def get_user_usage(
     user_id: str,
     db: Session = Depends(get_db),
-    authenticated_user: str = Depends(get_authenticated_user),
+    authenticated_user: str = Depends(
+        get_authenticated_user
+    ),
 ):
     if user_id != authenticated_user:
         raise HTTPException(
             status_code=403,
-            detail="You are not authorized to view this user's usage.",
+            detail=(
+                "You are not authorized to view "
+                "this user's usage."
+            ),
         )
 
     usage = get_usage(
@@ -185,14 +247,25 @@ def get_user_usage(
 
     return {
         "user_id": authenticated_user,
-        "credits_remaining": usage["credits_remaining"],
-        "total_requests": usage["total_requests"],
+        "credits_remaining": usage[
+            "credits_remaining"
+        ],
+        "total_requests": usage[
+            "total_requests"
+        ],
     }
+
+
+# ============================================================
+# SECURITY HISTORY
+# ============================================================
 
 @app.get("/api/security/history")
 def get_security_history(
     db: Session = Depends(get_db),
-    authenticated_user: str = Depends(get_authenticated_user),
+    authenticated_user: str = Depends(
+        get_authenticated_user
+    ),
 ):
     user = (
         db.query(models.User)
@@ -242,6 +315,11 @@ def get_security_history(
         ],
     }
 
+
+# ============================================================
+# USER REGISTRATION
+# ============================================================
+
 @app.post(
     "/api/auth/register",
     response_model=RegisterResponse,
@@ -275,14 +353,12 @@ def register_user(
     db.commit()
     db.refresh(user)
 
-    from app.services.api_key_service import create_api_key
-
     raw_api_key, api_key_record = create_api_key(
-    db=db,
-    user_id=request.user_id,
-    name=request.api_key_name,
-    expires_in_days=request.expires_in_days,
-)
+        db=db,
+        user_id=request.user_id,
+        name=request.api_key_name,
+        expires_in_days=request.expires_in_days,
+    )
 
     account = (
         db.query(models.Account)
@@ -296,8 +372,14 @@ def register_user(
         user_id=cast(str, user.user_id),
         email=cast(Any, user.email),
         api_key=raw_api_key,
-        api_key_name=cast(str, api_key_record.name),
-        expires_at=cast(Any, api_key_record.expires_at),
+        api_key_name=cast(
+            str,
+            api_key_record.name,
+        ),
+        expires_at=cast(
+            Any,
+            api_key_record.expires_at,
+        ),
         initial_credits=(
             cast(int, account.credits)
             if account
@@ -309,6 +391,7 @@ def register_user(
             "it will not be shown again."
         ),
     )
+
 
 # ============================================================
 # BASIC AI ANALYSIS ENDPOINT
@@ -350,10 +433,12 @@ def analyze(
     # STEP 1: CHECK CREDITS
     # --------------------------------------------------------
 
-    if not bool(can_use_ai(
-        db,
-        user_id,
-    )):
+    if not bool(
+        can_use_ai(
+            db,
+            user_id,
+        )
+    ):
         raise HTTPException(
             status_code=402,
             detail={
@@ -397,8 +482,8 @@ def analyze(
         confidence=0.0,
         risk_level="LOW",
         ml_explanation=(
-            "No ML classification result was provided for "
-            "this direct analysis request."
+            "No ML classification result was provided "
+            "for this direct analysis request."
         ),
         ml_recommendation=(
             "Continue monitoring and request a full ML "
@@ -416,6 +501,7 @@ def analyze(
 # ============================================================
 # METERED SECURITY ANALYSIS ENDPOINT
 # ============================================================
+
 @app.post(
     "/api/security/analyze",
     response_model=SecurityAnalysisResponse,
@@ -429,24 +515,37 @@ def analyze(
 def security_analyze(
     request: SecurityAnalysisRequest,
     db: Session = Depends(get_db),
-    authenticated_user: str = Depends(get_authenticated_user),
+    authenticated_user: str = Depends(
+        get_authenticated_user
+    ),
 ):
     # --------------------------------------------------------
     # AUTHENTICATION
     # --------------------------------------------------------
-    # authenticated_user comes from the X-API-Key.
-    # request.source is the security-data source
-    # (for example: CIC-IDS2017), NOT the user identity.
+
+    # authenticated_user comes from X-API-Key.
+    # request.source identifies the security-data source.
 
     # --------------------------------------------------------
     # METERING + PAYMENT + ML ANALYSIS
     # --------------------------------------------------------
 
-    return run_metered_security_analysis(
-        db,
-        request,
-        authenticated_user,
+    result = run_metered_security_analysis(
+        db=db,
+        request=request,
+        authenticated_user=authenticated_user,
     )
+
+    # --------------------------------------------------------
+    # MONITOR SECURITY ANALYSIS
+    # --------------------------------------------------------
+
+    monitoring_service.record_security_analysis(
+        threat_detected=result.ml_label == "DDoS",
+    )
+
+    return result
+
 
 # ============================================================
 # PAYMENT CREATION ENDPOINT
@@ -467,6 +566,8 @@ def create_payment_endpoint(
         authenticated_user_id,
     )
 
+    monitoring_service.record_payment()
+
     return {
         "payment_id": payment.id,
         "user_id": authenticated_user_id,
@@ -477,7 +578,14 @@ def create_payment_endpoint(
         "credits_to_add": 5,
     }
 
-@app.post("/api/payment/mock/complete/{payment_id}")
+
+# ============================================================
+# MOCK PAYMENT COMPLETION
+# ============================================================
+
+@app.post(
+    "/api/payment/mock/complete/{payment_id}"
+)
 def complete_mock_payment(
     payment_id: int,
     authenticated_user_id: str = Security(
@@ -485,23 +593,37 @@ def complete_mock_payment(
     ),
     db: Session = Depends(get_db),
 ):
+    # --------------------------------------------------------
+    # MOCK PROVIDER CHECK
+    # --------------------------------------------------------
+
     if LIGHTNING_PROVIDER != "mock":
         raise HTTPException(
             status_code=404,
             detail="Mock payment endpoint is disabled.",
         )
 
+    # --------------------------------------------------------
+    # FIND PAYMENT
+    # --------------------------------------------------------
+
     payment_record = (
         db.query(models.Payment)
-        .filter(models.Payment.id == payment_id)
+        .filter(
+            models.Payment.id == payment_id
+        )
         .first()
     )
 
-    if not payment_record:
+    if payment_record is None:
         raise HTTPException(
             status_code=404,
             detail="Payment not found.",
         )
+
+    # --------------------------------------------------------
+    # FIND PAYMENT OWNER
+    # --------------------------------------------------------
 
     payment_owner = (
         db.query(models.User)
@@ -511,42 +633,122 @@ def complete_mock_payment(
         .first()
     )
 
-    if not payment_owner:
+    if payment_owner is None:
         raise HTTPException(
             status_code=404,
             detail="Payment owner not found.",
         )
 
-    if payment_owner.user_id != authenticated_user_id:
+    # --------------------------------------------------------
+    # USER ISOLATION
+    # --------------------------------------------------------
+
+    if str(payment_owner.user_id) != authenticated_user_id:
         raise HTTPException(
             status_code=403,
-            detail="You are not authorized to complete this payment.",
+            detail=(
+                "You are not authorized to complete "
+                "this payment."
+            ),
         )
 
-    if not payment_record.payment_hash:
+    # --------------------------------------------------------
+    # PAYMENT HASH VALIDATION
+    # --------------------------------------------------------
+
+    if payment_record.payment_hash is None:
         raise HTTPException(
             status_code=400,
-            detail="Payment does not have a payment hash.",
+            detail="Payment hash is missing for this invoice.",
         )
 
-    try:
-        mock_payment = mark_mock_payment_paid(
-            payment_record.payment_hash
+    payment_hash = str(
+        payment_record.payment_hash
+    )
+
+    # --------------------------------------------------------
+    # MARK MOCK PAYMENT AS PAID
+    # --------------------------------------------------------
+
+    payment_result = mark_mock_payment_paid(
+        payment_hash
+    )
+
+    # --------------------------------------------------------
+    # UPDATE PAYMENT
+    # --------------------------------------------------------
+
+    setattr(
+        payment_record,
+        "status",
+        "paid",
+    )
+
+    setattr(
+        payment_record,
+        "credits_granted",
+        5,
+    )
+
+    # --------------------------------------------------------
+    # ADD CREDITS TO USER ACCOUNT
+    # --------------------------------------------------------
+
+    account = (
+        db.query(models.Account)
+        .filter(
+            models.Account.user_id
+            == payment_record.user_id
         )
-    except RuntimeError as exc:
-        raise HTTPException(
-            status_code=404,
-            detail=str(exc),
-        ) from exc
+        .first()
+    )
+
+    if account is not None:
+        current_credits = int(
+            getattr(
+                account,
+                "credits",
+                0,
+            )
+        )
+
+        setattr(
+            account,
+            "credits",
+            current_credits + 5,
+        )
+
+    # --------------------------------------------------------
+    # COMMIT DATABASE CHANGES
+    # --------------------------------------------------------
+
+    db.commit()
+
+    # --------------------------------------------------------
+    # MONITOR PAYMENT
+    # --------------------------------------------------------
+
+    monitoring_service.record_payment()
+
+    # --------------------------------------------------------
+    # RETURN MOCK PAYMENT RESULT
+    # --------------------------------------------------------
 
     return {
-        "payment_id": payment_id,
+        "payment_id": payment_record.id,
         "user_id": authenticated_user_id,
-        "status": "paid",
-        "mock_payment": True,
         "amount_sats": payment_record.amount_sats,
-        "payment_hash": mock_payment.payment_hash,
+        "status": payment_record.status,
+        "invoice": payment_record.invoice,
+        "payment_hash": payment_result.payment_hash,
+        "paid": payment_result.paid,
+
+        # IMPORTANT:
+        # This field is required by the mock-payment
+        # endpoint test.
+        "mock_payment": True,
     }
+
 
 # ============================================================
 # PAYMENT VERIFICATION ENDPOINT
@@ -564,7 +766,7 @@ def payment_verify(
     db: Session = Depends(get_db),
 ):
     # --------------------------------------------------------
-    # STEP 1: FIND PAYMENT
+    # FIND PAYMENT
     # --------------------------------------------------------
 
     payment_record = (
@@ -575,36 +777,35 @@ def payment_verify(
         .first()
     )
 
-    if not payment_record:
+    if payment_record is None:
         raise HTTPException(
             status_code=404,
             detail="Payment not found.",
         )
 
     # --------------------------------------------------------
-    # STEP 2: FIND PAYMENT OWNER
+    # FIND PAYMENT OWNER
     # --------------------------------------------------------
 
     payment_owner = (
         db.query(models.User)
         .filter(
-            models.User.id
-            == payment_record.user_id
+            models.User.id == payment_record.user_id
         )
         .first()
     )
 
-    if not payment_owner:
+    if payment_owner is None:
         raise HTTPException(
             status_code=404,
             detail="Payment owner not found.",
         )
 
     # --------------------------------------------------------
-    # STEP 3: AUTHORIZATION
+    # USER ISOLATION
     # --------------------------------------------------------
 
-    if cast(str, payment_owner.user_id) != authenticated_user_id:
+    if str(payment_owner.user_id) != authenticated_user_id:
         raise HTTPException(
             status_code=403,
             detail=(
@@ -614,23 +815,42 @@ def payment_verify(
         )
 
     # --------------------------------------------------------
-    # STEP 4: VERIFY LIGHTNING PAYMENT
+    # PAYMENT HASH VALIDATION
+    # --------------------------------------------------------
+
+    if (
+        payment_record.payment_hash is None
+        or str(payment_record.payment_hash).strip() == ""
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Payment hash is missing for this invoice.",
+        )
+
+    # --------------------------------------------------------
+    # VERIFY PAYMENT
     # --------------------------------------------------------
 
     payment = verify_payment(
         db,
         payment_id,
-        authenticated_user_id,
     )
 
-    if not payment:
+    if payment is None:
         raise HTTPException(
             status_code=404,
             detail="Payment not found.",
         )
 
     # --------------------------------------------------------
-    # STEP 5: GET USER ACCOUNT
+    # MONITOR SUCCESSFUL PAYMENT
+    # --------------------------------------------------------
+
+    if str(payment.status) == "paid":
+        monitoring_service.record_payment()
+
+    # --------------------------------------------------------
+    # GET USER ACCOUNT
     # --------------------------------------------------------
 
     account = (
@@ -643,7 +863,7 @@ def payment_verify(
     )
 
     # --------------------------------------------------------
-    # STEP 6: RETURN PAYMENT STATUS
+    # RETURN RESULT
     # --------------------------------------------------------
 
     return {
@@ -658,8 +878,6 @@ def payment_verify(
             else 0
         ),
     }
-
-
 
 
 # ============================================================
@@ -710,6 +928,12 @@ def run_agent(
     )
 
     # --------------------------------------------------------
+    # MONITOR AGENT REQUEST
+    # --------------------------------------------------------
+
+    monitoring_service.record_agent_request()
+
+    # --------------------------------------------------------
     # RETURN AGENT RESPONSE
     # --------------------------------------------------------
 
@@ -718,10 +942,18 @@ def run_agent(
         tool=result.tool,
         result=result.result,
     )
+
+
+# ============================================================
+# API KEY LIST
+# ============================================================
+
 @app.get(
     "/api/auth/api-keys",
     response_model=list[APIKeyResponse],
-    dependencies=[Depends(check_rate_limit)],
+    dependencies=[
+        Depends(check_rate_limit)
+    ],
 )
 def get_api_keys(
     user_id: str = Depends(
@@ -736,19 +968,44 @@ def get_api_keys(
 
     return [
         APIKeyResponse(
-            id=cast(int, api_key.id),
-            name=cast(Any, api_key.name),
-            active=bool(api_key.active),
-            created_at=cast(Any, api_key.created_at),
-            last_used_at=cast(Any, api_key.last_used_at),
-            expires_at=cast(Any, api_key.expires_at),
+            id=cast(
+                int,
+                api_key.id,
+            ),
+            name=cast(
+                Any,
+                api_key.name,
+            ),
+            active=bool(
+                api_key.active
+            ),
+            created_at=cast(
+                Any,
+                api_key.created_at,
+            ),
+            last_used_at=cast(
+                Any,
+                api_key.last_used_at,
+            ),
+            expires_at=cast(
+                Any,
+                api_key.expires_at,
+            ),
         )
         for api_key in api_keys
     ]
+
+
+# ============================================================
+# API KEY REVOKE
+# ============================================================
+
 @app.post(
     "/api/auth/api-keys/{api_key_id}/revoke",
     response_model=APIKeyRevokeResponse,
-    dependencies=[Depends(check_rate_limit)],
+    dependencies=[
+        Depends(check_rate_limit)
+    ],
 )
 def revoke_api_key_endpoint(
     api_key_id: int,
@@ -770,8 +1027,18 @@ def revoke_api_key_endpoint(
         )
 
     return APIKeyRevokeResponse(
-        id=cast(int, api_key.id),
-        name=cast(Any, api_key.name),
-        active=bool(api_key.active),
-        message="API key revoked successfully.",
+        id=cast(
+            int,
+            api_key.id,
+        ),
+        name=cast(
+            Any,
+            api_key.name,
+        ),
+        active=bool(
+            api_key.active
+        ),
+        message=(
+            "API key revoked successfully."
+        ),
     )

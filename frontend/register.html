@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Account | SentinelL402</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+
+<body class="auth-page">
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+
+            <!-- =================================================
+                 BRAND
+            ================================================== -->
+
+            <div class="auth-brand">
+
+                <div class="auth-brand-mark">
+                    S
+                </div>
+
+                <div>
+
+                    <div class="auth-brand-name">
+                        SentinelL402
+                    </div>
+
+                    <div class="auth-brand-subtitle">
+                        AI Security & Lightning Metering
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 HEADER
+            ================================================== -->
+
+            <div class="auth-header">
+
+                <h1>
+                    Create your account
+                </h1>
+
+                <p>
+                    Register for secure access to the
+                    SentinelL402 AI security platform.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 REGISTRATION FORM
+            ================================================== -->
+
+            <form
+                id="registerForm"
+                class="auth-form"
+            >
+
+
+                <!-- USER ID -->
+
+                <div class="form-group">
+
+                    <label for="registerUserId">
+                        User ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="registerUserId"
+                        name="user_id"
+                        placeholder="Enter your user ID"
+                        minlength="3"
+                        maxlength="100"
+                        autocomplete="username"
+                        required
+                    >
+
+                    <small>
+                        Use 3–100 characters.
+                    </small>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label for="registerEmail">
+
+                        Email
+
+                        <span>
+                            (optional)
+                        </span>
+
+                    </label>
+
+                    <input
+                        type="email"
+                        id="registerEmail"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                    >
+
+                </div>
+
+
+                <!-- API KEY NAME -->
+
+                <div class="form-group">
+
+                    <label for="registerApiKeyName">
+                        API Key Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="registerApiKeyName"
+                        name="api_key_name"
+                        value="default"
+                        minlength="1"
+                        maxlength="100"
+                        placeholder="default"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <small>
+                        Example: default, development, production
+                    </small>
+
+                </div>
+
+
+                <!-- API KEY EXPIRATION -->
+
+                <div class="form-group">
+
+                    <label for="registerExpires">
+                        API Key Expiration
+                    </label>
+
+                    <select
+                        id="registerExpires"
+                        name="expires_in_days"
+                    >
+
+                        <option value="">
+                            No expiration
+                        </option>
+
+                        <option value="30">
+                            30 days
+                        </option>
+
+                        <option value="90">
+                            90 days
+                        </option>
+
+                        <option value="180">
+                            180 days
+                        </option>
+
+                        <option value="365">
+                            1 year
+                        </option>
+
+                    </select>
+
+                    <small>
+                        You can create another API key later if needed.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     REGISTRATION BUTTON
+                ================================================== -->
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="registerButton"
+                >
+                    Create Account
+                </button>
+
+            </form>
+
+
+            <!-- =================================================
+                 REGISTRATION STATUS
+            ================================================== -->
+
+            <div
+                id="registerStatus"
+                class="auth-status"
+                role="status"
+                aria-live="polite"
+            ></div>
+
+
+            <!-- =================================================
+                 API KEY RESULT
+            ================================================== -->
+
+            <div
+                id="apiKeyResult"
+                class="generated-key-box"
+                hidden
+            >
+
+                <strong>
+                    Registration Successful
+                </strong>
+
+                <p>
+                    Your API key has been generated.
+                    Save it securely because it will not
+                    be displayed again after leaving this page.
+                </p>
+
+
+                <!-- API KEY LABEL -->
+
+                <label
+                    for="generatedApiKey"
+                >
+                    X-API-Key
+                </label>
+
+
+                <!-- API KEY DISPLAY -->
+
+                <div
+                    class="api-key-display"
+                    style="
+                        display: flex;
+                        gap: 8px;
+                        margin-top: 7px;
+                    "
+                >
+
+                    <input
+                        type="password"
+                        id="generatedApiKey"
+                        readonly
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="showGeneratedApiKeyButton"
+                    >
+                        Show
+                    </button>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="copyApiKeyButton"
+                    >
+                        Copy
+                    </button>
+
+                </div>
+
+
+                <!-- INITIAL CREDITS -->
+
+                <div
+                    class="information-box"
+                    style="margin-top: 15px;"
+                >
+
+                    <strong>
+                        Account Credits
+                    </strong>
+
+                    <span id="initialCreditsText">
+                        Initial credits: 0
+                    </span>
+
+                </div>
+
+
+                <!-- SECURITY WARNING -->
+
+                <div
+                    class="warning-box"
+                    style="margin-top: 15px;"
+                >
+
+                    <strong>
+                        Store your API key securely
+                    </strong>
+
+                    <p>
+                        Do not share your API key publicly,
+                        place it in frontend source code,
+                        or commit it to Git.
+                    </p>
+
+                </div>
+
+
+                <!-- CONTINUE -->
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="continueToDashboardButton"
+                    style="
+                        width: 100%;
+                        margin-top: 16px;
+                    "
+                >
+                    Continue to Dashboard
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 LOGIN LINK
+            ================================================== -->
+
+            <div class="auth-footer">
+
+                <span>
+                    Already have an account?
+                </span>
+
+                <a href="login.html">
+                    Sign In
+                </a>
+
+            </div>
+
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script>
+
+
+        /*
+        =========================================================
+        CONFIGURATION
+        =========================================================
+        */
+
+        const API_BASE =
+            "http://127.0.0.1:8001";
+
+
+        const API_KEY_STORAGE_KEY =
+            "sentinell402_api_key";
+
+
+        const USER_ID_STORAGE_KEY =
+            "sentinell402_user_id";
+
+
+        /*
+        =========================================================
+        DOM ELEMENTS
+        =========================================================
+        */
+
+        const registerForm =
+            document.getElementById(
+                "registerForm"
+            );
+
+
+        const registerStatus =
+            document.getElementById(
+                "registerStatus"
+            );
+
+
+        const registerButton =
+            document.getElementById(
+                "registerButton"
+            );
+
+
+        const apiKeyResult =
+            document.getElementById(
+                "apiKeyResult"
+            );
+
+
+        const generatedApiKey =
+            document.getElementById(
+                "generatedApiKey"
+            );
+
+
+        const initialCreditsText =
+            document.getElementById(
+                "initialCreditsText"
+            );
+
+
+        const copyApiKeyButton =
+            document.getElementById(
+                "copyApiKeyButton"
+            );
+
+
+        const showGeneratedApiKeyButton =
+            document.getElementById(
+                "showGeneratedApiKeyButton"
+            );
+
+
+        const continueToDashboardButton =
+            document.getElementById(
+                "continueToDashboardButton"
+            );
+
+
+        /*
+        =========================================================
+        HELPER — STATUS MESSAGE
+        =========================================================
+        */
+
+        function setStatus(message, isSuccess = false) {
+
+            registerStatus.textContent =
+                message;
+
+            registerStatus.classList.toggle(
+                "auth-success",
+                isSuccess
+            );
+
+        }
+
+
+        /*
+        =========================================================
+        REGISTRATION
+        =========================================================
+        */
+
+        registerForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                /*
+                -------------------------------------------------
+                GET FORM VALUES
+                -------------------------------------------------
+                */
+
+                const userId =
+                    document
+                        .getElementById(
+                            "registerUserId"
+                        )
+                        .value
+                        .trim();
+
+
+                const email =
+                    document
+                        .getElementById(
+                            "registerEmail"
+                        )
+                        .value
+                        .trim();
+
+
+                const apiKeyName =
+                    document
+                        .getElementById(
+                            "registerApiKeyName"
+                        )
+                        .value
+                        .trim();
+
+
+                const expiresValue =
+                    document
+                        .getElementById(
+                            "registerExpires"
+                        )
+                        .value;
+
+
+                /*
+                -------------------------------------------------
+                CLIENT-SIDE VALIDATION
+                -------------------------------------------------
+                */
+
+                if (
+                    userId.length < 3 ||
+                    userId.length > 100
+                ) {
+
+                    setStatus(
+                        "User ID must contain 3–100 characters."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!apiKeyName) {
+
+                    setStatus(
+                        "Please enter an API key name."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    apiKeyName.length < 1 ||
+                    apiKeyName.length > 100
+                ) {
+
+                    setStatus(
+                        "API key name must contain 1–100 characters."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                -------------------------------------------------
+                REQUEST BODY
+                -------------------------------------------------
+
+                Backend endpoint:
+
+                POST /api/auth/register
+
+                Example:
+
+                {
+                    "user_id": "trinesh",
+                    "email": "you@example.com",
+                    "api_key_name": "default",
+                    "expires_in_days": null
+                }
+
+                -------------------------------------------------
+                */
+
+                const payload = {
+
+                    user_id:
+                        userId,
+
+                    email:
+                        email
+                            ? email
+                            : null,
+
+                    api_key_name:
+                        apiKeyName,
+
+                    expires_in_days:
+                        expiresValue
+                            ? Number(expiresValue)
+                            : null
+
+                };
+
+
+                /*
+                -------------------------------------------------
+                UI STATE
+                -------------------------------------------------
+                */
+
+                setStatus(
+                    "Creating your account..."
+                );
+
+
+                registerButton.disabled =
+                    true;
+
+
+                registerButton.textContent =
+                    "Creating...";
+
+
+                try {
+
+
+                    /*
+                    -------------------------------------------------
+                    SEND REGISTRATION REQUEST
+                    -------------------------------------------------
+                    */
+
+                    const response =
+                        await fetch(
+                            `${API_BASE}/api/auth/register`,
+                            {
+
+                                method: "POST",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json",
+
+                                    "Accept":
+                                        "application/json"
+
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        payload
+                                    )
+
+                            }
+                        );
+
+
+                    /*
+                    -------------------------------------------------
+                    PARSE RESPONSE
+                    -------------------------------------------------
+                    */
+
+                    let data = {};
+
+                    try {
+
+                        data =
+                            await response.json();
+
+                    }
+
+                    catch (_) {
+
+                        data = {};
+
+                    }
+
+
+                    /*
+                    -------------------------------------------------
+                    HANDLE BACKEND ERROR
+                    -------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        let message =
+                            "Registration failed.";
+
+
+                        if (
+                            typeof data.detail ===
+                            "string"
+                        ) {
+
+                            message =
+                                data.detail;
+
+                        }
+
+                        else if (
+                            Array.isArray(
+                                data.detail
+                            )
+                        ) {
+
+                            message =
+                                data.detail
+                                    .map(
+                                        item =>
+                                            item.msg
+                                    )
+                                    .join(", ");
+
+                        }
+
+
+                        throw new Error(
+                            message
+                        );
+
+                    }
+
+
+                    /*
+                    -------------------------------------------------
+                    VERIFY API KEY
+                    -------------------------------------------------
+                    */
+
+                    if (!data.api_key) {
+
+                        throw new Error(
+                            "Registration succeeded, but the backend did not return an API key."
+                        );
+
+                    }
+
+
+                    /*
+                    -------------------------------------------------
+                    SAVE AUTHENTICATION DATA
+                    -------------------------------------------------
+                    */
+
+                    localStorage.setItem(
+                        API_KEY_STORAGE_KEY,
+                        data.api_key
+                    );
+
+
+                    localStorage.setItem(
+                        USER_ID_STORAGE_KEY,
+                        data.user_id
+                    );
+
+
+                    /*
+                    -------------------------------------------------
+                    DISPLAY API KEY
+                    -------------------------------------------------
+                    */
+
+                    generatedApiKey.value =
+                        data.api_key;
+
+
+                    /*
+                    -------------------------------------------------
+                    DISPLAY CREDITS
+                    -------------------------------------------------
+                    */
+
+                    const initialCredits =
+                        data.initial_credits ?? 0;
+
+
+                    initialCreditsText.textContent =
+                        `Initial credits: ${initialCredits}`;
+
+
+                    /*
+                    -------------------------------------------------
+                    SUCCESS STATUS
+                    -------------------------------------------------
+                    */
+
+                    setStatus(
+                        data.message ??
+                        "Registration successful.",
+                        true
+                    );
+
+
+                    /*
+                    -------------------------------------------------
+                    HIDE REGISTRATION FORM
+                    -------------------------------------------------
+                    */
+
+                    registerForm.hidden =
+                        true;
+
+
+                    /*
+                    -------------------------------------------------
+                    SHOW API KEY RESULT
+                    -------------------------------------------------
+                    */
+
+                    apiKeyResult.hidden =
+                        false;
+
+
+                    /*
+                    -------------------------------------------------
+                    LOG SUCCESS
+                    -------------------------------------------------
+                    */
+
+                    console.log(
+                        "SentinelL402 registration successful:",
+                        data.user_id
+                    );
+
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "SentinelL402 registration error:",
+                        error
+                    );
+
+
+                    setStatus(
+                        error.message ??
+                        "Registration failed."
+                    );
+
+                }
+
+                finally {
+
+                    registerButton.disabled =
+                        false;
+
+                    registerButton.textContent =
+                        "Create Account";
+
+                }
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        SHOW / HIDE GENERATED API KEY
+        =========================================================
+        */
+
+        showGeneratedApiKeyButton.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    generatedApiKey.type ===
+                    "password"
+                ) {
+
+                    generatedApiKey.type =
+                        "text";
+
+                    this.textContent =
+                        "Hide";
+
+                }
+
+                else {
+
+                    generatedApiKey.type =
+                        "password";
+
+                    this.textContent =
+                        "Show";
+
+                }
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        COPY API KEY
+        =========================================================
+        */
+
+        copyApiKeyButton.addEventListener(
+            "click",
+            async function () {
+
+                const key =
+                    generatedApiKey.value;
+
+
+                if (!key) {
+
+                    return;
+
+                }
+
+
+                try {
+
+                    await navigator
+                        .clipboard
+                        .writeText(key);
+
+
+                    this.textContent =
+                        "Copied!";
+
+
+                    setTimeout(
+                        () => {
+
+                            this.textContent =
+                                "Copy";
+
+                        },
+                        1500
+                    );
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Clipboard API failed:",
+                        error
+                    );
+
+
+                    /*
+                    -------------------------------------------------
+                    FALLBACK COPY
+                    -------------------------------------------------
+                    */
+
+                    generatedApiKey.type =
+                        "text";
+
+                    generatedApiKey.focus();
+
+                    generatedApiKey.select();
+
+
+                    try {
+
+                        document.execCommand(
+                            "copy"
+                        );
+
+                        this.textContent =
+                            "Copied!";
+
+                    }
+
+                    catch (fallbackError) {
+
+                        console.error(
+                            "Fallback copy failed:",
+                            fallbackError
+                        );
+
+                        this.textContent =
+                            "Copy failed";
+
+                    }
+
+
+                    setTimeout(
+                        () => {
+
+                            this.textContent =
+                                "Copy";
+
+                        },
+                        1500
+                    );
+
+                }
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        CONTINUE TO DASHBOARD
+        =========================================================
+        */
+
+        continueToDashboardButton.addEventListener(
+            "click",
+            function () {
+
+                const apiKey =
+                    localStorage.getItem(
+                        API_KEY_STORAGE_KEY
+                    );
+
+
+                const userId =
+                    localStorage.getItem(
+                        USER_ID_STORAGE_KEY
+                    );
+
+
+                /*
+                -------------------------------------------------
+                VERIFY LOCAL AUTH DATA
+                -------------------------------------------------
+                */
+
+                if (
+                    !apiKey ||
+                    !userId
+                ) {
+
+                    setStatus(
+                        "Authentication information is missing. Please register again."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                -------------------------------------------------
+                GO TO DASHBOARD
+                -------------------------------------------------
+                */
+
+                window.location.href =
+                    "index.html";
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        PAGE INITIALIZATION
+        =========================================================
+        */
+
+        console.log(
+            "SentinelL402 registration page initialized."
+        );
+
+    </script>
+
+</body>
+
+</html>

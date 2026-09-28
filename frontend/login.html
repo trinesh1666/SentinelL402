@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | SentinelL402</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+            <!-- =====================================================
+                 BRAND
+            ====================================================== -->
+
+            <div class="auth-brand">
+
+                <div class="auth-brand-mark">
+                    S
+                </div>
+
+                <div>
+                    <div class="auth-brand-name">
+                        SentinelL402
+                    </div>
+
+                    <div class="auth-brand-subtitle">
+                        AI Security & Lightning Metering
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 HEADER
+            ====================================================== -->
+
+            <div class="auth-header">
+
+                <h1>
+                    Welcome back
+                </h1>
+
+                <p>
+                    Sign in to access your SentinelL402 security
+                    dashboard and AI agent.
+                </p>
+
+            </div>
+
+
+            <!-- =====================================================
+                 LOGIN FORM
+            ====================================================== -->
+
+            <form id="loginForm" class="auth-form">
+
+                <!-- User ID -->
+
+                <div class="form-group">
+
+                    <label for="loginUserId">
+                        User ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="loginUserId"
+                        name="user_id"
+                        placeholder="Enter your User ID"
+                        minlength="3"
+                        maxlength="100"
+                        autocomplete="username"
+                        required
+                    >
+
+                    <small>
+                        Enter the User ID you used during registration.
+                    </small>
+
+                </div>
+
+
+                <!-- API Key -->
+
+                <div class="form-group">
+
+                    <label for="loginApiKey">
+                        API Key
+                    </label>
+
+                    <input
+                        type="password"
+                        id="loginApiKey"
+                        name="api_key"
+                        placeholder="sk_sentinel_..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        required
+                    >
+
+                    <small>
+                        Use the API key generated during registration.
+                    </small>
+
+                </div>
+
+
+                <!-- =================================================
+                     SHOW API KEY
+                ================================================== -->
+
+                <div class="api-key-toggle">
+
+                    <label for="showApiKey">
+
+                        <input
+                            type="checkbox"
+                            id="showApiKey"
+                        >
+
+                        <span>
+                            Show API key
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <!-- =================================================
+                     ERROR MESSAGE
+                ================================================== -->
+
+                <div
+                    id="loginError"
+                    class="auth-status"
+                    role="alert"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- =================================================
+                     LOGIN BUTTON
+                ================================================== -->
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                    id="loginButton"
+                >
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <!-- =====================================================
+                 SECURITY INFORMATION
+            ====================================================== -->
+
+            <div class="warning-box" style="margin-top: 20px;">
+
+                <strong>
+                    API Key Security
+                </strong>
+
+                <p>
+                    Your API key authenticates requests to SentinelL402.
+                    Never share it publicly or commit it to source control.
+                </p>
+
+            </div>
+
+
+            <!-- =====================================================
+                 REGISTER
+            ====================================================== -->
+
+            <div class="auth-footer">
+
+                <span>
+                    Don't have an account?
+                </span>
+
+                <a href="register.html">
+                    Create Account
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =============================================================
+         LOGIN JAVASCRIPT
+    ============================================================= -->
+
+    <script>
+
+        /*
+        =========================================================
+        CONFIGURATION
+        =========================================================
+        */
+
+        const API_BASE =
+            "http://127.0.0.1:8001";
+
+        const API_KEY_STORAGE_KEY =
+            "sentinell402_api_key";
+
+        const USER_ID_STORAGE_KEY =
+            "sentinell402_user_id";
+
+
+        /*
+        =========================================================
+        DOM ELEMENTS
+        =========================================================
+        */
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const loginUserId =
+            document.getElementById("loginUserId");
+
+        const loginApiKey =
+            document.getElementById("loginApiKey");
+
+        const showApiKey =
+            document.getElementById("showApiKey");
+
+        const loginButton =
+            document.getElementById("loginButton");
+
+        const loginError =
+            document.getElementById("loginError");
+
+
+        /*
+        =========================================================
+        ERROR MESSAGE
+        =========================================================
+        */
+
+        function showError(message) {
+
+            loginError.textContent =
+                message;
+
+            loginError.style.display =
+                "block";
+
+        }
+
+
+        function hideError() {
+
+            loginError.textContent =
+                "";
+
+            loginError.style.display =
+                "none";
+
+        }
+
+
+        /*
+        =========================================================
+        SHOW / HIDE API KEY
+        =========================================================
+        */
+
+        showApiKey.addEventListener(
+            "change",
+            function () {
+
+                if (showApiKey.checked) {
+
+                    loginApiKey.type =
+                        "text";
+
+                } else {
+
+                    loginApiKey.type =
+                        "password";
+
+                }
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        LOGIN
+        =========================================================
+        */
+
+        loginForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+                hideError();
+
+
+                /*
+                -------------------------------------------------
+                GET FORM VALUES
+                -------------------------------------------------
+                */
+
+                const userId =
+                    loginUserId.value.trim();
+
+                const apiKey =
+                    loginApiKey.value.trim();
+
+
+                /*
+                -------------------------------------------------
+                VALIDATE USER ID
+                -------------------------------------------------
+                */
+
+                if (!userId) {
+
+                    showError(
+                        "Please enter your User ID."
+                    );
+
+                    loginUserId.focus();
+
+                    return;
+                }
+
+
+                if (
+                    userId.length < 3 ||
+                    userId.length > 100
+                ) {
+
+                    showError(
+                        "User ID must contain 3–100 characters."
+                    );
+
+                    loginUserId.focus();
+
+                    return;
+                }
+
+
+                /*
+                -------------------------------------------------
+                VALIDATE API KEY
+                -------------------------------------------------
+                */
+
+                if (!apiKey) {
+
+                    showError(
+                        "Please enter your API key."
+                    );
+
+                    loginApiKey.focus();
+
+                    return;
+                }
+
+
+                /*
+                -------------------------------------------------
+                DISABLE LOGIN BUTTON
+                -------------------------------------------------
+                */
+
+                loginButton.disabled =
+                    true;
+
+                loginButton.textContent =
+                    "Authenticating...";
+
+
+                try {
+
+                    /*
+                    -------------------------------------------------
+                    VERIFY API KEY
+
+                    We call the authenticated usage endpoint.
+
+                    Backend:
+                    GET /api/usage/{user_id}
+
+                    Header:
+                    X-API-Key
+                    -------------------------------------------------
+                    */
+
+                    const response =
+                        await fetch(
+                            `${API_BASE}/api/usage/${encodeURIComponent(userId)}`,
+                            {
+                                method: "GET",
+
+                                headers: {
+                                    "Accept":
+                                        "application/json",
+
+                                    "X-API-Key":
+                                        apiKey
+                                }
+                            }
+                        );
+
+
+                    /*
+                    -------------------------------------------------
+                    SUCCESS
+                    -------------------------------------------------
+                    */
+
+                    if (response.ok) {
+
+                        const data =
+                            await response.json();
+
+
+                        /*
+                        -------------------------------------------------
+                        SAVE LOGIN SESSION
+                        -------------------------------------------------
+                        */
+
+                        localStorage.setItem(
+                            USER_ID_STORAGE_KEY,
+                            userId
+                        );
+
+                        localStorage.setItem(
+                            API_KEY_STORAGE_KEY,
+                            apiKey
+                        );
+
+
+                        console.log(
+                            "SentinelL402 login successful:",
+                            data
+                        );
+
+
+                        /*
+                        -------------------------------------------------
+                        REDIRECT TO DASHBOARD
+                        -------------------------------------------------
+                        */
+
+                        window.location.href =
+                            "index.html";
+
+                        return;
+                    }
+
+
+                    /*
+                    -------------------------------------------------
+                    AUTHENTICATION ERRORS
+                    -------------------------------------------------
+                    */
+
+                    if (
+                        response.status === 401
+                    ) {
+
+                        showError(
+                            "Invalid or missing API key."
+                        );
+
+                    }
+
+                    else if (
+                        response.status === 403
+                    ) {
+
+                        showError(
+                            "This API key does not belong to the specified User ID."
+                        );
+
+                    }
+
+                    else if (
+                        response.status === 404
+                    ) {
+
+                        showError(
+                            "User not found."
+                        );
+
+                    }
+
+                    else {
+
+                        let message =
+                            "Login failed. Please try again.";
+
+
+                        try {
+
+                            const errorData =
+                                await response.json();
+
+
+                            if (
+                                typeof errorData.detail ===
+                                "string"
+                            ) {
+
+                                message =
+                                    errorData.detail;
+
+                            }
+
+                            else if (
+                                Array.isArray(
+                                    errorData.detail
+                                )
+                            ) {
+
+                                message =
+                                    errorData.detail
+                                        .map(
+                                            item =>
+                                                item.msg
+                                        )
+                                        .join(", ");
+
+                            }
+
+                        }
+
+                        catch (_) {
+
+                            /*
+                            Ignore JSON parsing errors.
+                            */
+
+                        }
+
+
+                        showError(message);
+
+                    }
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "SentinelL402 login error:",
+                        error
+                    );
+
+
+                    showError(
+                        "Cannot connect to the SentinelL402 backend. Make sure FastAPI is running on port 8001."
+                    );
+
+                }
+
+                finally {
+
+                    /*
+                    -------------------------------------------------
+                    RESTORE LOGIN BUTTON
+                    -------------------------------------------------
+                    */
+
+                    loginButton.disabled =
+                        false;
+
+                    loginButton.textContent =
+                        "Sign In";
+
+                }
+
+            }
+        );
+
+
+        /*
+        =========================================================
+        AUTO-FILL SAVED USER ID
+        =========================================================
+        */
+
+        const savedUserId =
+            localStorage.getItem(
+                USER_ID_STORAGE_KEY
+            );
+
+
+        if (savedUserId) {
+
+            loginUserId.value =
+                savedUserId;
+
+        }
+
+
+        /*
+        =========================================================
+        PREVENT DASHBOARD ACCESS AFTER LOGOUT
+
+        If there is no saved API key, this page remains available.
+        =========================================================
+        */
+
+        console.log(
+            "SentinelL402 login page initialized."
+        );
+
+    </script>
+
+</body>
+
+</html>

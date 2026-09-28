@@ -1,5 +1,6 @@
 /* =========================================================
    SENTINELL402 FRONTEND APPLICATION
+   Classic Professional Multi-User Dashboard
 ========================================================= */
 
 
@@ -7,9 +8,11 @@
    CONFIGURATION
 ========================================================= */
 
-const API_BASE = "http://127.0.0.1:8001";
+const API_BASE =
+    "http://127.0.0.1:8001";
 
-const USER_ID = "l402-402-demo-user";
+const USER_ID_STORAGE_KEY =
+    "sentinell402_user_id";
 
 const API_KEY_STORAGE_KEY =
     "sentinell402_api_key";
@@ -21,9 +24,171 @@ let paymentSource = null;
 
 
 /* =========================================================
-   CIC-IDS2017 - COMPLETE 78 FEATURES
+   CURRENT USER MANAGEMENT
 ========================================================= */
- 
+
+function getCurrentUserId() {
+
+    return localStorage.getItem(
+        USER_ID_STORAGE_KEY
+    );
+}
+
+
+/* =========================================================
+   API KEY MANAGEMENT
+========================================================= */
+
+function getAPIKey() {
+
+    return localStorage.getItem(
+        API_KEY_STORAGE_KEY
+    );
+}
+
+
+function setAPIKey(apiKey) {
+
+    if (!apiKey) {
+        return;
+    }
+
+    localStorage.setItem(
+        API_KEY_STORAGE_KEY,
+        apiKey.trim()
+    );
+}
+
+
+function clearAPIKey() {
+
+    localStorage.removeItem(
+        API_KEY_STORAGE_KEY
+    );
+}
+
+
+/* =========================================================
+   AUTHENTICATION GUARD
+========================================================= */
+
+function requireAuthentication() {
+
+    const userId =
+        getCurrentUserId();
+
+    const apiKey =
+        getAPIKey();
+
+
+    if (!userId || !apiKey) {
+
+        window.location.href =
+            "login.html";
+
+        return false;
+    }
+
+
+    return true;
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout() {
+
+    /*
+     * Remove the current user's authentication
+     * information from browser storage.
+     */
+
+    localStorage.removeItem(
+        USER_ID_STORAGE_KEY
+    );
+
+    localStorage.removeItem(
+        API_KEY_STORAGE_KEY
+    );
+
+
+    /*
+     * Clear active payment state.
+     */
+
+    currentPaymentId = null;
+
+    paymentSource = null;
+
+
+    /*
+     * Redirect to API-key login page.
+     */
+
+    window.location.href =
+        "login.html";
+}
+
+
+/* =========================================================
+   USER DISPLAY
+========================================================= */
+
+function updateCurrentUserDisplay() {
+
+    const userId =
+        getCurrentUserId();
+
+
+    const elements = [
+        "userId",
+        "usageUser",
+        "current-user-display",
+        "dashboardUserId",
+        "accountUserId"
+    ];
+
+
+    elements.forEach(
+        id => {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+
+            if (element) {
+
+                element.textContent =
+                    userId || "--";
+            }
+
+        }
+    );
+
+
+    /*
+     * Optional welcome message.
+     */
+
+    const welcomeUser =
+        document.getElementById(
+            "welcomeUser"
+        );
+
+
+    if (welcomeUser) {
+
+        welcomeUser.textContent =
+            userId || "User";
+    }
+
+}
+
+
 /* =========================================================
    CIC-IDS2017 - COMPLETE 78 FEATURES
 ========================================================= */
@@ -200,51 +365,32 @@ console.log(
 
 
 /* =========================================================
-   API KEY MANAGEMENT
+   AUTHENTICATED REQUEST HEADERS
 ========================================================= */
-
-function getAPIKey() {
-
-    return localStorage.getItem(
-        API_KEY_STORAGE_KEY
-    );
-}
-
-
-function setAPIKey(apiKey) {
-
-    if (!apiKey) {
-        return;
-    }
-
-    localStorage.setItem(
-        API_KEY_STORAGE_KEY,
-        apiKey.trim()
-    );
-}
-
-
-function clearAPIKey() {
-
-    localStorage.removeItem(
-        API_KEY_STORAGE_KEY
-    );
-}
-
 
 function getAuthHeaders() {
 
-    const apiKey = getAPIKey();
+    const apiKey =
+        getAPIKey();
+
 
     const headers = {
-        "Content-Type": "application/json"
+
+        "Content-Type":
+            "application/json",
+
+        "Accept":
+            "application/json"
+
     };
+
 
     if (apiKey) {
 
         headers["X-API-Key"] =
             apiKey;
     }
+
 
     return headers;
 }
@@ -258,44 +404,51 @@ document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        const userIdElement =
-            document.getElementById(
-                "userId"
-            );
+        /*
+         * Protect dashboard.
+         */
 
-        if (userIdElement) {
-
-            userIdElement.textContent =
-                USER_ID;
+        if (!requireAuthentication()) {
+            return;
         }
 
+        loadMonitoring();
 
-        const usageUser =
-            document.getElementById(
-                "usageUser"
-            );
 
-        if (usageUser) {
+        /*
+         * Display authenticated user.
+         */
 
-            usageUser.textContent =
-                USER_ID;
-        }
+        updateCurrentUserDisplay();
 
+
+        /*
+         * API key status.
+         */
 
         const savedKey =
             getAPIKey();
+
 
         const apiKeyStatus =
             document.getElementById(
                 "apiKeyStatus"
             );
 
-        if (savedKey && apiKeyStatus) {
+
+        if (
+            savedKey &&
+            apiKeyStatus
+        ) {
 
             apiKeyStatus.textContent =
                 "API key configured.";
         }
 
+
+        /*
+         * Initial dashboard state.
+         */
 
         checkAPI();
 
@@ -304,8 +457,43 @@ document.addEventListener(
         updateDashboard();
 
 
+        /*
+         * Activate dashboard section
+         * when page first loads.
+         */
+
+        const dashboardSection =
+            document.getElementById(
+                "dashboard"
+            );
+
+
+        if (dashboardSection) {
+
+            showSection(
+                "dashboard"
+            );
+        }
+
+
+        /*
+         * Periodic authentication/session
+         * and API refresh.
+         */
+
         setInterval(
             () => {
+
+                if (
+                    !getCurrentUserId() ||
+                    !getAPIKey()
+                ) {
+
+                    logout();
+
+                    return;
+                }
+
 
                 checkAPI();
 
@@ -371,6 +559,7 @@ function showSection(
                 "active"
             );
 
+
             if (
                 item.dataset.section ===
                 sectionName
@@ -389,6 +578,7 @@ function showSection(
         document.getElementById(
             "pageTitle"
         );
+
 
     const pageSubtitle =
         document.getElementById(
@@ -444,14 +634,34 @@ function showSection(
 
     if (information) {
 
-        pageTitle.textContent =
-            information[0];
+        if (pageTitle) {
 
-        pageSubtitle.textContent =
-            information[1];
+            pageTitle.textContent =
+                information[0];
+        }
+
+
+        if (pageSubtitle) {
+
+            pageSubtitle.textContent =
+                information[1];
+        }
+
     }
 
+
+    /*
+     * Scroll main content to top.
+     */
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
 }
+
+
 
 
 /* =========================================================
@@ -467,7 +677,9 @@ async function checkAPI() {
                 `${API_BASE}/health`,
                 {
                     method: "GET",
-                    headers: getAuthHeaders()
+
+                    headers:
+                        getAuthHeaders()
                 }
             );
 
@@ -486,21 +698,15 @@ async function checkAPI() {
 
         setAPIStatus(
             true,
-            data.status || "healthy"
+            data.status ||
+            "healthy"
         );
 
 
-        const dashboardStatus =
-            document.getElementById(
-                "dashboardApiStatus"
-            );
-
-
-        if (dashboardStatus) {
-
-            dashboardStatus.textContent =
-                "Online";
-        }
+        setText(
+            "dashboardApiStatus",
+            "Online"
+        );
 
 
         return data;
@@ -519,17 +725,11 @@ async function checkAPI() {
         );
 
 
-        const dashboardStatus =
-            document.getElementById(
-                "dashboardApiStatus"
-            );
+        setText(
+            "dashboardApiStatus",
+            "Offline"
+        );
 
-
-        if (dashboardStatus) {
-
-            dashboardStatus.textContent =
-                "Offline";
-        }
 
         return null;
     }
@@ -550,15 +750,18 @@ function setAPIStatus(
             "sidebarStatusDot"
         );
 
+
     const sidebarStatus =
         document.getElementById(
             "sidebarStatus"
         );
 
+
     const apiDot =
         document.getElementById(
             "apiStatusDot"
         );
+
 
     const apiStatus =
         document.getElementById(
@@ -607,77 +810,480 @@ function setAPIStatus(
 
 
 /* =========================================================
+   LIVE MONITORING
+========================================================= */
+
+/* =====================================================
+   LIVE MONITORING
+===================================================== */
+
+async function loadMonitoring() {
+
+    const apiKey =
+        getAPIKey();
+
+    const monitoringUser =
+        document.getElementById(
+            "monitoringUser"
+        );
+
+    const monitoringCredits =
+        document.getElementById(
+            "monitoringCredits"
+        );
+
+    const monitoringRequests =
+        document.getElementById(
+            "monitoringRequests"
+        );
+
+    const monitoringStatus =
+        document.getElementById(
+            "monitoringStatus"
+        );
+
+    const monitoringDetailUser =
+        document.getElementById(
+            "monitoringDetailUser"
+        );
+
+    const monitoringDetailCredits =
+        document.getElementById(
+            "monitoringDetailCredits"
+        );
+
+    const monitoringDetailRequests =
+        document.getElementById(
+            "monitoringDetailRequests"
+        );
+
+    const monitoringMessage =
+        document.getElementById(
+            "monitoringMessage"
+        );
+
+
+    if (!apiKey) {
+
+        if (monitoringStatus) {
+            monitoringStatus.textContent =
+                "Not Authenticated";
+        }
+
+        if (monitoringMessage) {
+            monitoringMessage.textContent =
+                "API key is missing. Please configure your X-API-Key in Settings.";
+        }
+
+        return;
+
+    }
+
+
+    if (monitoringStatus) {
+
+        monitoringStatus.textContent =
+            "Checking";
+
+    }
+
+
+    if (monitoringMessage) {
+
+        monitoringMessage.textContent =
+            "Loading monitoring data...";
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_BASE +
+                "/api/monitoring/live",
+                {
+                    method: "GET",
+
+                    headers: {
+                        "X-API-Key":
+                            apiKey
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            let errorMessage =
+                "Monitoring request failed.";
+
+            try {
+
+                const errorData =
+                    await response.json();
+
+                if (errorData.detail) {
+
+                    errorMessage =
+                        errorData.detail;
+
+                }
+
+            } catch (error) {
+
+                // Ignore invalid error response.
+
+            }
+
+
+            throw new Error(
+                errorMessage
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const userId =
+            data.user_id || "--";
+
+
+        const credits =
+            data.credits_remaining ?? 0;
+
+
+        const requests =
+            data.total_requests ?? 0;
+
+
+        /* =============================================
+           STAT CARDS
+        ============================================== */
+
+        if (monitoringUser) {
+
+            monitoringUser.textContent =
+                userId;
+
+        }
+
+
+        if (monitoringCredits) {
+
+            monitoringCredits.textContent =
+                credits;
+
+        }
+
+
+        if (monitoringRequests) {
+
+            monitoringRequests.textContent =
+                requests;
+
+        }
+
+
+        if (monitoringStatus) {
+
+            monitoringStatus.textContent =
+                "Online";
+
+            monitoringStatus.classList.add(
+                "status-online"
+            );
+
+            monitoringStatus.classList.remove(
+                "status-offline"
+            );
+
+        }
+
+
+        /* =============================================
+           DETAIL CARD
+        ============================================== */
+
+        if (monitoringDetailUser) {
+
+            monitoringDetailUser.textContent =
+                userId;
+
+        }
+
+
+        if (monitoringDetailCredits) {
+
+            monitoringDetailCredits.textContent =
+                credits;
+
+        }
+
+
+        if (monitoringDetailRequests) {
+
+            monitoringDetailRequests.textContent =
+                requests;
+
+        }
+
+
+        if (monitoringMessage) {
+
+            monitoringMessage.textContent =
+                "Monitoring data loaded successfully.";
+
+        }
+
+
+        console.log(
+            "Monitoring response:",
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Monitoring error:",
+            error
+        );
+
+
+        if (monitoringStatus) {
+
+            monitoringStatus.textContent =
+                "Offline";
+
+            monitoringStatus.classList.add(
+                "status-offline"
+            );
+
+            monitoringStatus.classList.remove(
+                "status-online"
+            );
+
+        }
+
+
+        if (monitoringMessage) {
+
+            monitoringMessage.textContent =
+                "Unable to load monitoring data: " +
+                error.message;
+
+        }
+
+    }
+
+}
+/* =========================================================
    LOAD USAGE
 ========================================================= */
 
 async function loadUsage() {
-    const userId = "l402-402-demo-user";
+
+    const userId =
+        getCurrentUserId();
+
+
+    const apiKey =
+        getAPIKey();
+
 
     if (!userId) {
-        console.warn("No user ID configured.");
+
+        console.warn(
+            "No authenticated user ID found."
+        );
+
+        updateUsageUI(
+            null
+        );
+
         return;
     }
 
-    try {
-        const response = await fetch(
-            `${API_BASE}/api/usage/${encodeURIComponent(userId)}`,
-            {
-                method: "GET",
-                headers: getAuthHeaders()
-            }
+
+    if (!apiKey) {
+
+        console.warn(
+            "No API key found."
         );
 
-        if (!response.ok) {
-            console.error(
-                `Usage request failed: ${response.status}`
+        updateUsageUI(
+            null
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE}/api/usage/${encodeURIComponent(userId)}`,
+                {
+                    method: "GET",
+
+                    headers:
+                        getAuthHeaders()
+                }
             );
+
+
+        if (
+            response.status ===
+            401
+        ) {
+
+            console.error(
+                "API key is missing or invalid."
+            );
+
+
+            setStatus(
+                document.getElementById(
+                    "apiKeyStatus"
+                ),
+                "Session expired. Please login again.",
+                "error"
+            );
+
+
+            logout();
+
             return;
         }
 
-        const data = await response.json();
 
-        console.log("Usage response:", data);
+        if (
+            response.status ===
+            403
+        ) {
 
-        // Usage section
-        const usageUser = document.getElementById("usageUser");
-        const usageCredits = document.getElementById("usageCredits");
-        const usageRequests = document.getElementById("usageRequests");
+            console.error(
+                "API key does not belong to this user."
+            );
 
-        if (usageUser) {
-            usageUser.textContent = data.user_id ?? userId;
+
+            setStatus(
+                document.getElementById(
+                    "apiKeyStatus"
+                ),
+                "Authentication mismatch. Please login again.",
+                "error"
+            );
+
+
+            logout();
+
+            return;
         }
 
-        if (usageCredits) {
-            usageCredits.textContent =
-                data.credits_remaining ?? 0;
+
+        if (!response.ok) {
+
+            console.error(
+                `Usage request failed: ${response.status}`
+            );
+
+
+            updateUsageUI(
+                null
+            );
+
+            return;
         }
 
-        if (usageRequests) {
-            usageRequests.textContent =
-                data.total_requests ?? 0;
-        }
 
-        // Dashboard section
-        const dashboardCredits =
-            document.getElementById("dashboardCredits");
+        const data =
+            await response.json();
 
-        const dashboardRequests =
-            document.getElementById("dashboardRequests");
 
-        if (dashboardCredits) {
-            dashboardCredits.textContent =
-                data.credits_remaining ?? 0;
-        }
+        console.log(
+            "Usage response:",
+            data
+        );
 
-        if (dashboardRequests) {
-            dashboardRequests.textContent =
-                data.total_requests ?? 0;
-        }
+
+        /*
+         * Usage section.
+         */
+
+        setText(
+            "usageUser",
+            data.user_id ??
+            userId
+        );
+
+
+        setText(
+            "usageCredits",
+            data.credits_remaining ??
+            0
+        );
+
+
+        setText(
+            "usageRequests",
+            data.total_requests ??
+            0
+        );
+
+
+        /*
+         * Dashboard section.
+         */
+
+        setText(
+            "dashboardCredits",
+            data.credits_remaining ??
+            0
+        );
+
+
+        setText(
+            "dashboardRequests",
+            data.total_requests ??
+            0
+        );
+
+
+        /*
+         * Alternative IDs used by
+         * older dashboard markup.
+         */
+
+        setText(
+            "credits",
+            data.credits_remaining ??
+            0
+        );
+
+
+        setText(
+            "requests",
+            data.total_requests ??
+            0
+        );
+
 
     } catch (error) {
+
         console.error(
             "Failed to load usage:",
             error
+        );
+
+
+        updateUsageUI(
+            null
         );
     }
 }
@@ -695,12 +1301,19 @@ function updateUsageUI(
     if (!data) {
 
         const elements = [
+
             "dashboardCredits",
+
             "dashboardRequests",
+
             "credits",
+
             "requests",
+
             "usageCredits",
+
             "usageRequests"
+
         ];
 
 
@@ -711,6 +1324,7 @@ function updateUsageUI(
                     document.getElementById(
                         id
                     );
+
 
                 if (element) {
 
@@ -730,6 +1344,7 @@ function updateUsageUI(
         data.credits ??
         data.remaining_credits ??
         data.credit_balance ??
+        data.credits_remaining ??
         0;
 
 
@@ -742,7 +1357,8 @@ function updateUsageUI(
 
     const user =
         data.user_id ??
-        USER_ID;
+        getCurrentUserId() ??
+        "--";
 
 
     setText(
@@ -750,30 +1366,36 @@ function updateUsageUI(
         credits
     );
 
+
     setText(
         "dashboardRequests",
         requests
     );
+
 
     setText(
         "credits",
         credits
     );
 
+
     setText(
         "requests",
         requests
     );
+
 
     setText(
         "usageUser",
         user
     );
 
+
     setText(
         "usageCredits",
         credits
     );
+
 
     setText(
         "usageRequests",
@@ -788,6 +1410,8 @@ function updateUsageUI(
 ========================================================= */
 
 function updateDashboard() {
+
+    updateCurrentUserDisplay();
 
     loadUsage();
 
@@ -812,22 +1436,50 @@ async function analyzeSecurity() {
         );
 
 
-    const eventType =
+    const eventTypeElement =
         document.getElementById(
             "eventType"
-        ).value.trim();
+        );
+
+
+    const severityElement =
+        document.getElementById(
+            "severity"
+        );
+
+
+    const descriptionElement =
+        document.getElementById(
+            "description"
+        );
+
+
+    if (
+        !eventTypeElement ||
+        !severityElement ||
+        !descriptionElement
+    ) {
+
+        setStatus(
+            status,
+            "Security analysis form is incomplete.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const eventType =
+        eventTypeElement.value.trim();
 
 
     const severity =
-        document.getElementById(
-            "severity"
-        ).value;
+        severityElement.value;
 
 
     const description =
-        document.getElementById(
-            "description"
-        ).value.trim();
+        descriptionElement.value.trim();
 
 
     if (!eventType || !description) {
@@ -842,7 +1494,22 @@ async function analyzeSecurity() {
     }
 
 
-    button.disabled = true;
+    if (
+        !getCurrentUserId() ||
+        !getAPIKey()
+    ) {
+
+        logout();
+
+        return;
+    }
+
+
+    if (button) {
+
+        button.disabled = true;
+    }
+
 
     setStatus(
         status,
@@ -855,6 +1522,7 @@ async function analyzeSecurity() {
         "resultCard"
     );
 
+
     hideElement(
         "paymentCard"
     );
@@ -862,7 +1530,8 @@ async function analyzeSecurity() {
 
     const payload = {
 
-        source: "CIC-IDS2017",
+        source:
+            "CIC-IDS2017",
 
         event_type:
             eventType,
@@ -902,11 +1571,15 @@ async function analyzeSecurity() {
             await response.json();
 
 
-        if (response.status === 402) {
+        if (
+            response.status ===
+            402
+        ) {
 
             showPaymentRequired(
                 data
             );
+
 
             setStatus(
                 status,
@@ -914,29 +1587,38 @@ async function analyzeSecurity() {
                 "warning"
             );
 
-            return;
-        }
-
-
-        if (response.status === 401) {
-
-            setStatus(
-                status,
-                "Missing API key. Configure it in Settings.",
-                "error"
-            );
 
             return;
         }
 
 
-        if (response.status === 403) {
+        if (
+            response.status ===
+            401
+        ) {
 
             setStatus(
                 status,
-                "Invalid or unauthorized API key.",
+                "Your API key is missing or invalid. Please login again.",
                 "error"
             );
+
+
+            return;
+        }
+
+
+        if (
+            response.status ===
+            403
+        ) {
+
+            setStatus(
+                status,
+                "Your API key is not authorized for this account.",
+                "error"
+            );
+
 
             return;
         }
@@ -983,7 +1665,10 @@ async function analyzeSecurity() {
 
     } finally {
 
-        button.disabled = false;
+        if (button) {
+
+            button.disabled = false;
+        }
     }
 
 }
@@ -1012,20 +1697,24 @@ function showAnalysisResult(
         result.source
     );
 
+
     setText(
         "resultEventType",
         result.event_type
     );
+
 
     setText(
         "prediction",
         result.ml_prediction
     );
 
+
     setText(
         "mlLabel",
         result.ml_label
     );
+
 
     setText(
         "confidence",
@@ -1034,25 +1723,30 @@ function showAnalysisResult(
         )
     );
 
+
     setText(
         "riskLevel",
         result.risk_level
     );
+
 
     setText(
         "resultCredits",
         result.credits_remaining
     );
 
+
     setText(
         "explanation",
         result.explanation
     );
 
+
     setText(
         "recommendation",
         result.recommendation
     );
+
 
     setText(
         "llmAnalysis",
@@ -1121,7 +1815,8 @@ function showPaymentRequired(
 
     setText(
         "paymentId",
-        currentPaymentId || "--"
+        currentPaymentId ||
+        "--"
     );
 
 
@@ -1166,7 +1861,10 @@ async function verifyPayment() {
         );
 
 
-    button.disabled = true;
+    if (button) {
+
+        button.disabled = true;
+    }
 
 
     updatePaymentMessage(
@@ -1181,6 +1879,7 @@ async function verifyPayment() {
                 `${API_BASE}/api/payment/verify/${currentPaymentId}`,
                 {
                     method: "POST",
+
                     headers:
                         getAuthHeaders()
                 }
@@ -1189,6 +1888,28 @@ async function verifyPayment() {
 
         const data =
             await response.json();
+
+
+        if (
+            response.status ===
+            401
+        ) {
+
+            logout();
+
+            return;
+        }
+
+
+        if (
+            response.status ===
+            403
+        ) {
+
+            logout();
+
+            return;
+        }
 
 
         if (!response.ok) {
@@ -1237,7 +1958,10 @@ async function verifyPayment() {
 
     } finally {
 
-        button.disabled = false;
+        if (button) {
+
+            button.disabled = false;
+        }
     }
 }
 
@@ -1252,13 +1976,14 @@ async function retrySecurityAnalysis() {
         "paymentCard"
     );
 
+
     await analyzeSecurity();
 
 }
 
 
 /* =========================================================
-   AGENT
+   AI AGENT
 ========================================================= */
 
 async function runAgent() {
@@ -1275,31 +2000,96 @@ async function runAgent() {
         );
 
 
-    const intent =
+    const currentUserId =
+        getCurrentUserId();
+
+
+    const apiKey =
+        getAPIKey();
+
+
+    if (
+        !currentUserId ||
+        !apiKey
+    ) {
+
+        setStatus(
+            status,
+            "You must log in before using the AI Agent.",
+            "error"
+        );
+
+
+        window.location.href =
+            "login.html";
+
+
+        return;
+    }
+
+
+    const intentElement =
         document.getElementById(
             "agentIntent"
-        ).value;
+        );
+
+
+    const eventTypeElement =
+        document.getElementById(
+            "agentEventType"
+        );
+
+
+    const severityElement =
+        document.getElementById(
+            "agentSeverity"
+        );
+
+
+    const descriptionElement =
+        document.getElementById(
+            "agentDescription"
+        );
+
+
+    if (
+        !intentElement ||
+        !eventTypeElement ||
+        !severityElement ||
+        !descriptionElement
+    ) {
+
+        setStatus(
+            status,
+            "AI Agent form is incomplete.",
+            "error"
+        );
+
+
+        return;
+    }
+
+
+    const intent =
+        intentElement.value;
 
 
     const eventType =
-        document.getElementById(
-            "agentEventType"
-        ).value.trim();
+        eventTypeElement.value.trim();
 
 
     const severity =
-        document.getElementById(
-            "agentSeverity"
-        ).value;
+        severityElement.value;
 
 
     const description =
-        document.getElementById(
-            "agentDescription"
-        ).value.trim();
+        descriptionElement.value.trim();
 
 
-    if (!eventType || !description) {
+    if (
+        !eventType ||
+        !description
+    ) {
 
         setStatus(
             status,
@@ -1307,11 +2097,15 @@ async function runAgent() {
             "error"
         );
 
+
         return;
     }
 
 
-    button.disabled = true;
+    if (button) {
+
+        button.disabled = true;
+    }
 
 
     setStatus(
@@ -1325,6 +2119,7 @@ async function runAgent() {
         "agentResultCard"
     );
 
+
     hideElement(
         "agentPaymentCard"
     );
@@ -1333,7 +2128,7 @@ async function runAgent() {
     const payload = {
 
         user_id:
-            USER_ID,
+            currentUserId,
 
         intent:
             intent,
@@ -1383,11 +2178,15 @@ async function runAgent() {
             await response.json();
 
 
-        if (response.status === 402) {
+        if (
+            response.status ===
+            402
+        ) {
 
             showAgentPaymentRequired(
                 data
             );
+
 
             setStatus(
                 status,
@@ -1395,29 +2194,38 @@ async function runAgent() {
                 "warning"
             );
 
-            return;
-        }
-
-
-        if (response.status === 401) {
-
-            setStatus(
-                status,
-                "Missing API key. Configure it in Settings.",
-                "error"
-            );
 
             return;
         }
 
 
-        if (response.status === 403) {
+        if (
+            response.status ===
+            401
+        ) {
 
             setStatus(
                 status,
-                "Invalid or unauthorized API key.",
+                "Your API key is missing or invalid. Please login again.",
                 "error"
             );
+
+
+            return;
+        }
+
+
+        if (
+            response.status ===
+            403
+        ) {
+
+            setStatus(
+                status,
+                "Your API key is not authorized for this account.",
+                "error"
+            );
+
 
             return;
         }
@@ -1464,7 +2272,10 @@ async function runAgent() {
 
     } finally {
 
-        button.disabled = false;
+        if (button) {
+
+            button.disabled = false;
+        }
     }
 
 }
@@ -1566,7 +2377,8 @@ function showAgentResult(
 
     setText(
         "agentUserId",
-        USER_ID
+        getCurrentUserId() ||
+        "--"
     );
 
 
@@ -1643,20 +2455,21 @@ function showAgentPaymentRequired(
 
 
     setText(
-        "paymentId",
-        currentPaymentId || "--"
+        "agentPaymentId",
+        currentPaymentId ||
+        "--"
     );
 
 
     setText(
-        "paymentAmount",
+        "agentPaymentAmount",
         detail.amount_sats
             ? `${detail.amount_sats} sats`
             : "--"
     );
 
 
-    updatePaymentMessage(
+    updateAgentPaymentMessage(
         message
     );
 }
@@ -1678,7 +2491,20 @@ async function verifyAgentPayment() {
             "error"
         );
 
+
         return;
+    }
+
+
+    const button =
+        document.getElementById(
+            "verifyAgentPaymentButton"
+        );
+
+
+    if (button) {
+
+        button.disabled = true;
     }
 
 
@@ -1689,6 +2515,7 @@ async function verifyAgentPayment() {
                 `${API_BASE}/api/payment/verify/${currentPaymentId}`,
                 {
                     method: "POST",
+
                     headers:
                         getAuthHeaders()
                 }
@@ -1699,6 +2526,28 @@ async function verifyAgentPayment() {
             await response.json();
 
 
+        if (
+            response.status ===
+            401
+        ) {
+
+            logout();
+
+            return;
+        }
+
+
+        if (
+            response.status ===
+            403
+        ) {
+
+            logout();
+
+            return;
+        }
+
+
         if (!response.ok) {
 
             throw new Error(
@@ -1706,6 +2555,11 @@ async function verifyAgentPayment() {
                 `Payment verification failed: HTTP ${response.status}`
             );
         }
+
+
+        updateAgentPaymentMessage(
+            "Payment verified successfully. Credits restored."
+        );
 
 
         hideElement(
@@ -1741,6 +2595,13 @@ async function verifyAgentPayment() {
             "Payment verification failed.",
             "error"
         );
+
+    } finally {
+
+        if (button) {
+
+            button.disabled = false;
+        }
     }
 }
 
@@ -1754,6 +2615,7 @@ async function retryAgent() {
     hideElement(
         "agentPaymentCard"
     );
+
 
     await runAgent();
 
@@ -1780,10 +2642,24 @@ function updatePaymentInformation(
         currentPaymentId =
             result.payment_id;
 
-        setText(
-            "paymentId",
-            result.payment_id
-        );
+
+        if (
+            paymentSource ===
+            "agent"
+        ) {
+
+            setText(
+                "agentPaymentId",
+                result.payment_id
+            );
+
+        } else {
+
+            setText(
+                "paymentId",
+                result.payment_id
+            );
+        }
     }
 
 
@@ -1791,11 +2667,25 @@ function updatePaymentInformation(
         result.amount_sats
     ) {
 
-        setText(
-            "paymentAmount",
-            `${result.amount_sats} sats`
-        );
+        if (
+            paymentSource ===
+            "agent"
+        ) {
+
+            setText(
+                "agentPaymentAmount",
+                `${result.amount_sats} sats`
+            );
+
+        } else {
+
+            setText(
+                "paymentAmount",
+                `${result.amount_sats} sats`
+            );
+        }
     }
+
 }
 
 
@@ -1818,6 +2708,37 @@ function updatePaymentMessage(
         element.textContent =
             message;
     }
+
+}
+
+
+/* =========================================================
+   AGENT PAYMENT MESSAGE
+========================================================= */
+
+function updateAgentPaymentMessage(
+    message
+) {
+
+    const element =
+        document.getElementById(
+            "agentPaymentMessage"
+        );
+
+
+    if (element) {
+
+        element.textContent =
+            message;
+
+        return;
+    }
+
+
+    updatePaymentMessage(
+        message
+    );
+
 }
 
 
@@ -1856,6 +2777,7 @@ function saveAPIKey() {
             "error"
         );
 
+
         return;
     }
 
@@ -1871,6 +2793,7 @@ function saveAPIKey() {
             "The API key should start with sk_sentinel_.",
             "warning"
         );
+
 
         return;
     }
@@ -1915,12 +2838,19 @@ function removeAPIKey() {
 
     setStatus(
         status,
-        "API key removed.",
+        "API key removed. Redirecting to login...",
         "warning"
     );
 
 
-    loadUsage();
+    setTimeout(
+        () => {
+
+            logout();
+
+        },
+        500
+    );
 
 }
 
@@ -1952,6 +2882,7 @@ function setText(
 
         element.textContent =
             "--";
+
 
         return;
     }
@@ -1987,6 +2918,7 @@ function setStatus(
             type
         );
     }
+
 }
 
 
@@ -2005,6 +2937,7 @@ function showElement(
         element.style.display =
             "block";
     }
+
 }
 
 
@@ -2023,6 +2956,7 @@ function hideElement(
         element.style.display =
             "none";
     }
+
 }
 
 
@@ -2065,15 +2999,28 @@ console.log(
     "SentinelL402 frontend loaded."
 );
 
+
 console.log(
     "API:",
     API_BASE
 );
 
+
 console.log(
     "User:",
-    USER_ID
+    getCurrentUserId() ||
+    "Not logged in"
 );
+
+
+console.log(
+    "Authenticated:",
+    Boolean(
+        getCurrentUserId() &&
+        getAPIKey()
+    )
+);
+
 
 console.log(
     "Features:",
@@ -2081,3 +3028,528 @@ console.log(
         FEATURES
     ).length
 );
+
+/* =========================================================
+   DASHBOARD GRAPHS
+========================================================= */
+
+function drawBarChart(
+    canvasId,
+    label,
+    value,
+    maximum
+) {
+
+    const canvas =
+        document.getElementById(canvasId);
+
+    if (!canvas) {
+        return;
+    }
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    const width =
+        canvas.clientWidth;
+
+    const height =
+        canvas.clientHeight;
+
+
+    const ratio =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        width * ratio;
+
+    canvas.height =
+        height * ratio;
+
+
+    ctx.scale(
+        ratio,
+        ratio
+    );
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    GRAPH AREA
+    ---------------------------------------------------------
+    */
+
+    const left =
+        55;
+
+    const right =
+        width - 25;
+
+    const top =
+        25;
+
+    const bottom =
+        height - 45;
+
+
+    const graphWidth =
+        right - left;
+
+    const graphHeight =
+        bottom - top;
+
+
+    /*
+    ---------------------------------------------------------
+    GRID
+    ---------------------------------------------------------
+    */
+
+    ctx.strokeStyle =
+        "#e5e7eb";
+
+    ctx.lineWidth =
+        1;
+
+
+    for (
+        let i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        const y =
+            bottom -
+            (
+                graphHeight *
+                i /
+                4
+            );
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            left,
+            y
+        );
+
+        ctx.lineTo(
+            right,
+            y
+        );
+
+        ctx.stroke();
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    BAR
+    ---------------------------------------------------------
+    */
+
+    const safeMaximum =
+        Math.max(
+            maximum,
+            1
+        );
+
+
+    const safeValue =
+        Math.max(
+            0,
+            Math.min(
+                value,
+                safeMaximum
+            )
+        );
+
+
+    const barHeight =
+        (
+            safeValue /
+            safeMaximum
+        ) *
+        graphHeight;
+
+
+    const barWidth =
+        Math.min(
+            100,
+            graphWidth / 3
+        );
+
+
+    const barX =
+        left +
+        (
+            graphWidth -
+            barWidth
+        ) /
+        2;
+
+
+    const barY =
+        bottom -
+        barHeight;
+
+
+    ctx.fillStyle =
+        "#1f6fae";
+
+
+    ctx.fillRect(
+        barX,
+        barY,
+        barWidth,
+        barHeight
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    AXIS
+    ---------------------------------------------------------
+    */
+
+    ctx.strokeStyle =
+        "#94a3b8";
+
+    ctx.lineWidth =
+        1;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        top
+    );
+
+    ctx.lineTo(
+        left,
+        bottom
+    );
+
+    ctx.lineTo(
+        right,
+        bottom
+    );
+
+    ctx.stroke();
+
+
+    /*
+    ---------------------------------------------------------
+    LABEL
+    ---------------------------------------------------------
+    */
+
+    ctx.fillStyle =
+        "#475569";
+
+    ctx.font =
+        "14px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        label,
+        barX +
+        barWidth / 2,
+        bottom + 25
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    VALUE
+    ---------------------------------------------------------
+    */
+
+    ctx.fillStyle =
+        "#12385b";
+
+    ctx.font =
+        "bold 20px Arial";
+
+
+    ctx.fillText(
+        String(value),
+        barX +
+        barWidth / 2,
+        Math.max(
+            barY - 10,
+            20
+        )
+    );
+
+}
+
+
+/* =========================================================
+   SYSTEM STATUS GRAPH
+========================================================= */
+
+function drawSystemStatusChart() {
+
+    const canvas =
+        document.getElementById(
+            "systemStatusChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    const width =
+        canvas.clientWidth;
+
+    const height =
+        canvas.clientHeight;
+
+
+    const ratio =
+        window.devicePixelRatio || 1;
+
+
+    canvas.width =
+        width * ratio;
+
+    canvas.height =
+        height * ratio;
+
+
+    ctx.scale(
+        ratio,
+        ratio
+    );
+
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    const centerX =
+        width / 2;
+
+    const centerY =
+        height / 2;
+
+    const radius =
+        Math.min(
+            width,
+            height
+        ) *
+        0.32;
+
+
+    /*
+    ---------------------------------------------------------
+    ONLINE RING
+    ---------------------------------------------------------
+    */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.strokeStyle =
+        "#e5e7eb";
+
+    ctx.lineWidth =
+        28;
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        -Math.PI / 2,
+        Math.PI * 1.5
+    );
+
+
+    ctx.strokeStyle =
+        "#2e9b68";
+
+    ctx.lineWidth =
+        28;
+
+    ctx.stroke();
+
+
+    /*
+    ---------------------------------------------------------
+    CENTER TEXT
+    ---------------------------------------------------------
+    */
+
+    ctx.fillStyle =
+        "#12385b";
+
+    ctx.font =
+        "bold 20px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        "ONLINE",
+        centerX,
+        centerY + 7
+    );
+
+}
+
+
+/* =========================================================
+   LOAD DASHBOARD GRAPHS
+========================================================= */
+
+function loadDashboardGraphs(
+    data = null
+) {
+
+    const userId =
+        data?.user_id ??
+        getCurrentUserId();
+
+
+    const credits =
+        Number(
+            data?.credits_remaining ?? 0
+        );
+
+
+    const requests =
+        Number(
+            data?.total_requests ?? 0
+        );
+
+
+    /*
+    ---------------------------------------------------------
+    REQUEST GRAPH
+    ---------------------------------------------------------
+    */
+
+    drawBarChart(
+        "requestsChart",
+        "Requests",
+        requests,
+        Math.max(
+            requests,
+            10
+        )
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    CREDIT GRAPH
+    ---------------------------------------------------------
+    */
+
+    drawBarChart(
+        "creditsChart",
+        "Credits",
+        credits,
+        Math.max(
+            credits,
+            10
+        )
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    SYSTEM STATUS
+    ---------------------------------------------------------
+    */
+
+    drawSystemStatusChart();
+
+
+    /*
+    ---------------------------------------------------------
+    ACCOUNT SUMMARY
+    ---------------------------------------------------------
+    */
+
+    const chartUser =
+        document.getElementById(
+            "chartUser"
+        );
+
+    const chartCredits =
+        document.getElementById(
+            "chartCredits"
+        );
+
+    const chartRequests =
+        document.getElementById(
+            "chartRequests"
+        );
+
+
+    if (chartUser) {
+
+        chartUser.textContent =
+            userId || "--";
+
+    }
+
+
+    if (chartCredits) {
+
+        chartCredits.textContent =
+            credits;
+
+    }
+
+
+    if (chartRequests) {
+
+        chartRequests.textContent =
+            requests;
+
+    }
+
+}

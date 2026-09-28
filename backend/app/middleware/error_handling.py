@@ -14,7 +14,7 @@ class LightningServiceError(Exception):
 
 async def database_service_exception_handler(
     request: Request,
-    exc: DatabaseServiceError,
+    exc: Exception,
 ) -> JSONResponse:
     """Return a safe response for database dependency failures."""
 
@@ -66,7 +66,7 @@ async def llm_service_exception_handler(
 
 async def lightning_service_exception_handler(
     request: Request,
-    exc: LightningServiceError,
+    exc: Exception,
 ) -> JSONResponse:
     """Return a safe response for Lightning dependency failures."""
 

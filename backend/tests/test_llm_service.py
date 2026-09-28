@@ -25,7 +25,7 @@ def test_llm_service_returns_text(monkeypatch):
             "http://localhost:11434/api/generate"
         )
 
-        assert json["model"] == "llama3.2:3b"
+        assert json["model"] == "qwen3:8b"
 
         assert (
             json["prompt"]
