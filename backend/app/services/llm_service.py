@@ -1,12 +1,32 @@
 import os
 import logging
+
 import requests
 from dotenv import load_dotenv
 
 from app.middleware.error_handling import LLMServiceError
+
+
 load_dotenv()
 
+
 logger = logging.getLogger("sentinell402.llm")
+
+
+# ============================================================
+# LLM PROVIDER CONFIGURATION
+# ============================================================
+
+LLM_PROVIDER = os.getenv(
+    "LLM_PROVIDER",
+    "ollama",
+).strip().lower()
+
+
+# ============================================================
+# OLLAMA CONFIGURATION
+# ============================================================
+
 OLLAMA_URL = os.getenv(
     "OLLAMA_URL",
     "http://localhost:11434/api/generate",
@@ -18,10 +38,34 @@ OLLAMA_MODEL = os.getenv(
 )
 
 
-def generate_text(
+# ============================================================
+# OPENROUTER CONFIGURATION
+# ============================================================
+
+OPENROUTER_API_KEY = os.getenv(
+    "OPENROUTER_API_KEY",
+    "",
+).strip()
+
+OPENROUTER_BASE_URL = os.getenv(
+    "OPENROUTER_BASE_URL",
+    "https://openrouter.ai/api/v1",
+).strip()
+
+OPENROUTER_MODEL = os.getenv(
+    "OPENROUTER_MODEL",
+    "",
+).strip()
+
+
+def _generate_with_ollama(
     prompt: str,
     model: str | None = None,
 ) -> str:
+    """
+    Generate text using the local Ollama service.
+    """
+
     selected_model = model or OLLAMA_MODEL
 
     payload = {
@@ -31,7 +75,6 @@ def generate_text(
     }
 
     try:
-        logger.info("LLM request started")
         response = requests.post(
             OLLAMA_URL,
             json=payload,
@@ -49,7 +92,6 @@ def generate_text(
                 "LLM response did not contain a valid response field."
             )
 
-        logger.info("LLM request completed")
         return generated_text
 
     except LLMServiceError:
@@ -64,6 +106,124 @@ def generate_text(
         raise LLMServiceError(
             "LLM service returned an invalid response."
         ) from exc
+
+
+def _generate_with_openrouter(
+    prompt: str,
+    model: str | None = None,
+) -> str:
+    """
+    Generate text using OpenRouter's OpenAI-compatible API.
+    """
+
+    if not OPENROUTER_API_KEY:
+        raise LLMServiceError(
+            "OpenRouter API key is not configured."
+        )
+
+    selected_model = (
+        model
+        or OPENROUTER_MODEL
+    )
+
+    if not selected_model:
+        raise LLMServiceError(
+            "OpenRouter model is not configured."
+        )
+
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(
+            api_key=OPENROUTER_API_KEY,
+            base_url=OPENROUTER_BASE_URL,
+        )
+
+        response = client.chat.completions.create(
+            model=selected_model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+        )
+
+        if not response.choices:
+            raise LLMServiceError(
+                "OpenRouter response did not contain any choices."
+            )
+
+        message = response.choices[0].message
+        generated_text = message.content
+
+        if not isinstance(generated_text, str):
+            raise LLMServiceError(
+                "OpenRouter response did not contain valid text."
+            )
+
+        return generated_text
+
+    except LLMServiceError:
+        raise
+
+    except Exception as exc:
+        logger.exception(
+            "OpenRouter request failed"
+        )
+
+        raise LLMServiceError(
+            "LLM service request failed."
+        ) from exc
+
+
+def generate_text(
+    prompt: str,
+    model: str | None = None,
+) -> str:
+    """
+    Generate text using the configured LLM provider.
+
+    Supported providers:
+
+    - ollama
+    - openrouter
+
+    Existing callers continue to use:
+
+        generate_text(prompt)
+
+    without needing to know which provider is active.
+    """
+
+    logger.info(
+        "LLM request started | provider=%s",
+        LLM_PROVIDER,
+    )
+
+    if LLM_PROVIDER == "ollama":
+        generated_text = _generate_with_ollama(
+            prompt=prompt,
+            model=model,
+        )
+
+    elif LLM_PROVIDER == "openrouter":
+        generated_text = _generate_with_openrouter(
+            prompt=prompt,
+            model=model,
+        )
+
+    else:
+        raise LLMServiceError(
+            f"Unsupported LLM provider: {LLM_PROVIDER}"
+        )
+
+    logger.info(
+        "LLM request completed | provider=%s",
+        LLM_PROVIDER,
+    )
+
+    return generated_text
 
 
 def analyze_security_event(
