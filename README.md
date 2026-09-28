@@ -959,3 +959,12 @@ Add the project's chosen license before distributing the repository for broader 
 **Trinesh Vardhan**
 
 SentinelL402 was developed as a practical project demonstrating the integration of **AI agents, machine learning, Bitcoin Lightning, HTTP 402, API metering, and production-oriented backend engineering**.
+
+---
+
+## Current Project Status
+
+For the current implementation status, architecture, authentication, monitoring, ML, L402/Lightning, dashboard, and testing information, see:
+
+- [Current Project Status](docs/current-status.md)
+
